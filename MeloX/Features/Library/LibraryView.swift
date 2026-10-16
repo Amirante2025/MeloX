@@ -31,7 +31,7 @@ struct LibraryView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if fixedPage == nil, availablePages.count > 1 {
+            if !showsNavigationTitle, fixedPage == nil, availablePages.count > 1 {
                 Group {
                     if availablePages.count > 4, horizontalSizeClass == .compact {
                         pagePicker.pickerStyle(.menu)
@@ -71,6 +71,13 @@ struct LibraryView: View {
             prompt: searchPrompt,
             isEnabled: canSearchCurrentPage
         )
+        .toolbar {
+            if showsNavigationTitle, fixedPage == nil, availablePages.count > 1 {
+                ToolbarTitleMenu {
+                    pagePicker.pickerStyle(.inline)
+                }
+            }
+        }
         .onAppear {
             guard !hasAppliedInitialPage else { return }
             hasAppliedInitialPage = true
