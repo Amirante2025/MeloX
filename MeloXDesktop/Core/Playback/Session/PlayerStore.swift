@@ -254,9 +254,7 @@ final class PlayerStore {
             engine: engine,
             analyzer: beatAnalyzer
         )
-        nowPlayingSession = NowPlayingSession(
-            players: engine.nowPlayingPlayers
-        )
+        nowPlayingSession = NowPlayingSession()
         lyricsLiveActivityController = LyricsLiveActivityController()
         self.lyricsNotificationController =
             lyricsNotificationController
@@ -1205,7 +1203,7 @@ final class PlayerStore {
                 await self?.handleEngineFailure(error)
             }
         }
-        engine.onInterruptionBegan = { [weak self] in
+        engine.onInterruptionBegan = { [weak self] _ in
             guard let self else { return }
             self.shouldResumeAfterInterruption = self.isPlaying
             self.engine.pause()

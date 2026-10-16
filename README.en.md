@@ -391,6 +391,7 @@ Thanks to the following shareholder for supporting MeloX. The list is for acknow
 - [WXRIW/Lyricify-Lyrics-Helper](https://github.com/WXRIW/Lyricify-Lyrics-Helper): reference for NetEase YRC word-synced lyric parsing.
 - [qier222/YesPlayMusic](https://github.com/qier222/YesPlayMusic): reference for NetEase Cloud Music APIs and player behavior.
 - [DanteAlighieri13210914/pv-tool](https://github.com/DanteAlighieri13210914/pv-tool): original Text PV templates and visual effects.
+- [dimitris-c/AudioStreaming](https://github.com/dimitris-c/AudioStreaming): Audio streaming engine for iOS and macOS.
 - [mjhydri/BeatNet](https://github.com/mjhydri/BeatNet): beat, downbeat, and tempo analysis model used by AutoMix.
 
 The code and resources from these projects remain subject to their original licenses.

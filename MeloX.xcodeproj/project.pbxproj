@@ -13,6 +13,8 @@
 		C20000000000000000000001 /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = C20000000000000000000003 /* NukeUI */; };
 		CDCDC02B263846DD93AAF886 /* MeloXLyricsWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2572AEB5A5B04809878AE645 /* MeloXLyricsWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		D3000000000000000000000B /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = A1D0AD000000000000000003 /* GRDB */; };
+		F60000000000000000000001 /* AudioStreaming in Frameworks */ = {isa = PBXBuildFile; productRef = F60000000000000000000004 /* AudioStreaming */; };
+		F60000000000000000000002 /* AudioStreaming in Frameworks */ = {isa = PBXBuildFile; productRef = F60000000000000000000004 /* AudioStreaming */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -158,6 +160,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1D0AD000000000000000001 /* GRDB in Frameworks */,
+				F60000000000000000000001 /* AudioStreaming in Frameworks */,
 				C20000000000000000000001 /* NukeUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -175,6 +178,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D3000000000000000000000B /* GRDB in Frameworks */,
+				F60000000000000000000002 /* AudioStreaming in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -259,6 +263,7 @@
 			name = MeloX;
 			packageProductDependencies = (
 				A1D0AD000000000000000003 /* GRDB */,
+				F60000000000000000000004 /* AudioStreaming */,
 				C20000000000000000000003 /* NukeUI */,
 			);
 			productName = MeloX;
@@ -310,6 +315,7 @@
 			name = "MeloX Desktop";
 			packageProductDependencies = (
 				A1D0AD000000000000000003 /* GRDB */,
+				F60000000000000000000004 /* AudioStreaming */,
 			);
 			productName = "MeloX Desktop";
 			productReference = D30000000000000000000001 /* MeloX Desktop.app */;
@@ -362,6 +368,7 @@
 			packageReferences = (
 				A1D0AD000000000000000002 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
 				B10000000000000000000011 /* XCLocalSwiftPackageReference "vendor/QRCode" */,
+				F60000000000000000000003 /* XCLocalSwiftPackageReference "vendor/AudioStreaming" */,
 				C20000000000000000000002 /* XCRemoteSwiftPackageReference "Nuke" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -976,6 +983,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = vendor/QRCode;
 		};
+		F60000000000000000000003 /* XCLocalSwiftPackageReference "vendor/AudioStreaming" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = vendor/AudioStreaming;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -1012,6 +1023,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C20000000000000000000002 /* XCRemoteSwiftPackageReference "Nuke" */;
 			productName = NukeUI;
+		};
+		F60000000000000000000004 /* AudioStreaming */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F60000000000000000000003 /* XCLocalSwiftPackageReference "vendor/AudioStreaming" */;
+			productName = AudioStreaming;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
