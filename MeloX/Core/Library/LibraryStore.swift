@@ -552,6 +552,18 @@ final class LibraryStore {
         }
     }
 
+    func createPlaylist(name: String, isPrivate: Bool) async throws {
+        guard isLoggedIn, let profile else { throw APIError.notLoggedIn }
+        let created = try await api.createPlaylist(name: name, isPrivate: isPrivate)
+        let summary = Playlist(
+            id: created.id,
+            name: created.name,
+            coverURLString: created.coverURLString,
+            creator: UserSummary(userID: profile.id, nickname: profile.nickname)
+        )
+        favoritePlaylists.insert(summary, at: 0)
+    }
+
     func add(song: Song, to playlist: Playlist) async throws {
         guard isLoggedIn else { throw APIError.notLoggedIn }
         guard playlist.creator?.userID == profile?.id else {

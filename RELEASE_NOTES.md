@@ -4,6 +4,8 @@
 
 ### 简体中文
 
+- 增加了新建公开与私密歌单，支持在添加歌曲时直接创建歌单
+
 - 更换了 iOS 音频播放引擎，优化了跳转、暂停与重播的进度同步
 - 修复了歌词跳转后与音频时间轴不同步的问题
 - 修复了 EVA 歌词界面进入时未随背景渐入的问题
@@ -11,6 +13,8 @@
 - 修复了 iPad 播放器收起与展开歌词按钮的尺寸和对齐问题
 
 ### English
+
+- Added public and private playlist creation, including creating a playlist while adding a song
 
 - Replaced the iOS audio playback engine to improve progress synchronization when seeking, pausing, and replaying tracks
 - Fixed lyrics falling out of sync with audio after seeking
@@ -22,10 +26,14 @@
 
 ### 简体中文
 
+- 增加了新建公开与私密歌单，支持在添加歌曲时直接创建歌单
+
 - 更换了音频播放引擎，优化了跳转、暂停与重播的进度同步
 - 修复了歌词跳转后与音频时间轴不同步的问题
 
 ### English
+
+- Added public and private playlist creation, including creating a playlist while adding a song
 
 - Replaced the audio playback engine to improve progress synchronization when seeking, pausing, and replaying tracks
 - Fixed lyrics falling out of sync with audio after seeking

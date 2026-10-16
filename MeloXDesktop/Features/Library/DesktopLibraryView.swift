@@ -5,6 +5,7 @@ struct DesktopLibraryView: View {
     @Environment(DesktopAppModel.self) private var model
     let section: DesktopSection
 
+    @State private var showsCreation = false
     @State private var showsImporter = false
     @State private var isPreparingPlayback = false
     @State private var playbackErrorMessage: String?
@@ -33,6 +34,11 @@ struct DesktopLibraryView: View {
             await model.library.refresh()
             if section == .cloud {
                 await model.cloud.refresh()
+            }
+        }
+        .sheet(isPresented: $showsCreation) {
+            PlaylistCreationSheet { name, isPrivate in
+                try await model.library.createPlaylist(name: name, isPrivate: isPrivate)
             }
         }
         .fileImporter(
@@ -91,6 +97,9 @@ struct DesktopLibraryView: View {
                 Task { await model.player.playAll(model.downloads.downloadedSongs) }
             }
             .disabled(model.downloads.downloadedSongs.isEmpty)
+        case .playlists:
+            Button("ui.playlists.create.title", systemImage: "plus") { showsCreation = true }
+                .disabled(!model.library.isLoggedIn)
         case .cloud:
             Button("ui.cloud.upload_music", systemImage: "plus") { showsImporter = true }
         default:

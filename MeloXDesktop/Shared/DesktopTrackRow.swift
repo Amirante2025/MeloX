@@ -13,6 +13,8 @@ struct DesktopTrackRow: View {
     var displayNumber: String?
 
     @State private var isHovered = false
+    @State private var showsPlaylistCreation = false
+    @State private var playlistError: String?
 
     private var isCurrent: Bool {
         model.player.currentSong?.id == song.id
@@ -105,6 +107,19 @@ struct DesktopTrackRow: View {
             }
         }
         .contextMenu { songMenuContent }
+        .sheet(isPresented: $showsPlaylistCreation) {
+            PlaylistCreationSheet { name, isPrivate in
+                try await model.library.createPlaylist(name: name, isPrivate: isPrivate)
+            }
+        }
+        .alert("ui.playlists.add_failed", isPresented: Binding(
+            get: { playlistError != nil },
+            set: { if !$0 { playlistError = nil } }
+        )) {
+            Button("ui.common.ok", role: .cancel) { playlistError = nil }
+        } message: {
+            Text(playlistError ?? "")
+        }
     }
 
     private var songMenu: some View {
@@ -130,12 +145,21 @@ struct DesktopTrackRow: View {
         }
 
         Menu("ui.playlists.add_to", systemImage: "text.badge.plus") {
-            if model.library.favoritePlaylists.isEmpty {
+            Button("ui.playlists.create.title", systemImage: "plus") { showsPlaylistCreation = true }
+                .disabled(!model.library.isLoggedIn)
+            Divider()
+            if model.library.ownedPlaylists.isEmpty {
                 Text("ui.playlists.none_available")
             } else {
-                ForEach(model.library.favoritePlaylists) { playlist in
+                ForEach(model.library.ownedPlaylists) { playlist in
                     Button(playlist.name) {
-                        Task { try? await model.library.add(song: song, to: playlist) }
+                        Task {
+                            do {
+                                try await model.library.add(song: song, to: playlist)
+                            } catch {
+                                playlistError = error.localizedDescription
+                            }
+                        }
                     }
                 }
             }

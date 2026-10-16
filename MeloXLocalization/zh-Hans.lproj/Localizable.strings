@@ -1206,7 +1206,7 @@
 "ui.playlists.login_to_add" = "登录网易云音乐后，才能把歌曲添加到自己的歌单。";
 "ui.playlists.loading" = "正在读取歌单";
 "ui.playlists.none_available" = "没有可选歌单";
-"ui.playlists.create_first" = "请先在网易云音乐中创建一个歌单。";
+"ui.playlists.create_first" = "新建一个歌单，然后添加歌曲。";
 "ui.playlists.add_to_accessibility" = "添加到%@，%ld 首歌曲";
 "ui.playlists.search_prompt" = "在歌单中搜索";
 "ui.playlists.load_complete_failed" = "无法读取完整歌单。";
@@ -2100,3 +2100,8 @@
 "ui.release_notes.entry.intro_indicator" = "修复了歌曲开头前奏指示器进入顶部渐变消失区域的问题。";
 "ui.release_notes.entry.artwork_overflow" = "修复了歌曲封面超出容器大小的问题。";
 "ui.error.api.server_code" = "音乐服务返回了错误（%ld）。";
+
+"ui.playlists.create.title" = "新建歌单";
+"ui.playlists.create.name" = "歌单名称";
+"ui.playlists.create.private" = "私密歌单";
+"ui.playlists.create.action" = "创建";

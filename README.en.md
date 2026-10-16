@@ -180,6 +180,7 @@ The watch app currently supports independent sign-in, search, daily recommendati
 - Liked songs
 - Saved playlists
 - Saved albums
+- Create public and private playlists
 - Add songs to playlists
 - Playback history
 - NetEase Cloud Music listening-record sync

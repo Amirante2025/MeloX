@@ -1206,7 +1206,7 @@
 "ui.playlists.login_to_add" = "Sign in to NetEase Cloud Music before adding songs to one of your playlists.";
 "ui.playlists.loading" = "Loading Playlists";
 "ui.playlists.none_available" = "No Available Playlists";
-"ui.playlists.create_first" = "Create a playlist in NetEase Cloud Music first.";
+"ui.playlists.create_first" = "Create a playlist, then add your song.";
 "ui.playlists.add_to_accessibility" = "Add to %@, %ld songs";
 "ui.playlists.search_prompt" = "Search This Playlist";
 "ui.playlists.load_complete_failed" = "The complete playlist could not be loaded.";
@@ -2100,3 +2100,8 @@
 "ui.release_notes.entry.intro_indicator" = "Fixed the intro indicator entering the top fade-out area at the beginning of a song.";
 "ui.release_notes.entry.artwork_overflow" = "Fixed song artwork overflowing its container.";
 "ui.error.api.server_code" = "The music service returned an error (%ld).";
+
+"ui.playlists.create.title" = "New Playlist";
+"ui.playlists.create.name" = "Playlist Name";
+"ui.playlists.create.private" = "Private Playlist";
+"ui.playlists.create.action" = "Create";

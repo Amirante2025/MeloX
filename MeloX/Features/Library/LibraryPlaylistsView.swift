@@ -5,6 +5,8 @@ struct LibraryPlaylistsView: View {
 
     @Environment(LibraryStore.self) private var library
 
+    @State private var showsCreation = false
+
     var body: some View {
         List {
             if !isSearching, let userID = library.profile?.id {
@@ -49,6 +51,18 @@ struct LibraryPlaylistsView: View {
             }
         }
         .listStyle(.plain)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("ui.playlists.create.title", systemImage: "plus") { showsCreation = true }
+                    .disabled(!library.isLoggedIn)
+            }
+        }
+        .sheet(isPresented: $showsCreation) {
+            PlaylistCreationSheet { name, isPrivate in
+                try await library.createPlaylist(name: name, isPrivate: isPrivate)
+            }
+            .presentationDetents([.medium])
+        }
         .refreshable {
             await library.refresh(force: true)
         }
