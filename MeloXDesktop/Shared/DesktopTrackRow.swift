@@ -11,6 +11,7 @@ struct DesktopTrackRow: View {
     var showsArtwork = false
     var showsAlbumColumn = true
     var displayNumber: String?
+    var onRemoveSong: ((Song) -> Void)?
 
     @State private var isHovered = false
     @State private var showsPlaylistCreation = false
@@ -162,6 +163,12 @@ struct DesktopTrackRow: View {
                         }
                     }
                 }
+            }
+        }
+
+        if let onRemoveSong {
+            Button("ui.playlists.remove_song", systemImage: "minus.circle", role: .destructive) {
+                onRemoveSong(song)
             }
         }
 

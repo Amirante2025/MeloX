@@ -260,6 +260,7 @@ struct DesktopCollectionTrackList: View {
     var groupsByDisc = false
     var loadMoreToken: Int?
     var onLoadMore: (() async -> Void)?
+    var onRemoveSong: ((Song) -> Void)?
 
     var body: some View {
         let entries = makeEntries()
@@ -303,7 +304,8 @@ struct DesktopCollectionTrackList: View {
             showsAlbumColumn: showsAlbumColumn,
             displayNumber: usesTrackNumbers
                 ? String(entry.song.trackNumber ?? entry.index + 1)
-                : nil
+                : nil,
+            onRemoveSong: onRemoveSong
         )
 
         if isLast, let loadMoreToken, let onLoadMore {

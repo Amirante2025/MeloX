@@ -6,6 +6,10 @@ struct DesktopPlaylistDetailView: View {
     let playlistID: Int
 
     @State private var playlist: Playlist?
+    @State private var pendingRemoval: Song?
+    @State private var isRemovingTrack = false
+    @State private var removalError: String?
+
     @State private var songs: [Song] = []
     @State private var isLoading = true
     @State private var errorMessage: String?
@@ -54,7 +58,10 @@ struct DesktopPlaylistDetailView: View {
                                 : nil,
                             onLoadMore: {
                                 await loadMoreTracks()
-                            }
+                            },
+                            onRemoveSong: model.library.canDelete(playlist) && !isLoadingMoreTracks
+                                ? { pendingRemoval = $0 }
+                                : nil
                         )
 
                         if hasMoreTracks {
@@ -76,6 +83,31 @@ struct DesktopPlaylistDetailView: View {
                     Task { await load() }
                 }
             }
+        }
+        .disabled(isRemovingTrack)
+        .confirmationDialog(
+            "ui.playlists.remove_song",
+            isPresented: Binding(
+                get: { pendingRemoval != nil },
+                set: { if !$0 { pendingRemoval = nil } }
+            ),
+            titleVisibility: .visible,
+            presenting: pendingRemoval
+        ) { song in
+            Button("ui.playlists.remove_song", role: .destructive) {
+                Task { await removeSong(song) }
+            }
+            Button("ui.common.cancel", role: .cancel) {}
+        } message: { song in
+            Text(L10n.format("ui.playlists.remove_song.message", song.name))
+        }
+        .alert("ui.library.error.title", isPresented: Binding(
+            get: { removalError != nil },
+            set: { if !$0 { removalError = nil } }
+        )) {
+            Button("ui.common.ok", role: .cancel) { removalError = nil }
+        } message: {
+            Text(removalError ?? "")
         }
         .navigationTitle(playlist?.name ?? L10n.string("ui.common.playlist"))
         .task(id: playlistID) { await load() }
@@ -145,9 +177,27 @@ struct DesktopPlaylistDetailView: View {
         isLoading = false
     }
 
+    private func removeSong(_ song: Song) async {
+        guard let playlist, !isLoadingMoreTracks else { return }
+        isRemovingTrack = true
+        defer { isRemovingTrack = false }
+        do {
+            try await model.library.remove(song: song, from: playlist)
+            guard var updated = self.playlist else { return }
+            if let index = updated.removeSong(id: song.id), index < loadedTrackOffset {
+                loadedTrackOffset -= 1
+            }
+            self.playlist = updated
+            songs.removeAll { $0.id == song.id }
+        } catch {
+            removalError = error.localizedDescription
+        }
+    }
+
     private func loadMoreTracks() async {
         guard let currentPlaylist = playlist,
               !isLoadingMoreTracks,
+              !isRemovingTrack,
               loadedTrackOffset < currentPlaylist.trackIDs.count else {
             return
         }

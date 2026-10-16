@@ -2109,3 +2109,6 @@
 "ui.playlists.delete.title" = "删除歌单？";
 "ui.playlists.delete.action" = "删除歌单";
 "ui.playlists.delete.message" = "将从网易云音乐账号中永久删除“%@”及其中的歌曲列表。";
+
+"ui.playlists.remove_song" = "从歌单移除";
+"ui.playlists.remove_song.message" = "从此歌单中移除“%@”？";

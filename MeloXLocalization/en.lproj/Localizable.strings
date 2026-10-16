@@ -2109,3 +2109,6 @@
 "ui.playlists.delete.title" = "Delete Playlist?";
 "ui.playlists.delete.action" = "Delete Playlist";
 "ui.playlists.delete.message" = "“%@” and its track list will be permanently deleted from your NetEase Cloud Music account.";
+
+"ui.playlists.remove_song" = "Remove from Playlist";
+"ui.playlists.remove_song.message" = "Remove “%@” from this playlist?";

@@ -4,6 +4,7 @@ struct PlaylistTrackList: View {
     let tracks: [Song]
     let sourceID: Int
     let showsArtwork: Bool
+    var onRemoveSong: ((Song) -> Void)?
     var downloadSelection: MusicCollectionDownloadCoordinator?
 
     var body: some View {
@@ -20,7 +21,8 @@ struct PlaylistTrackList: View {
                         sourceID: sourceID,
                         index: index,
                         showsArtwork: showsArtwork,
-                        downloadSelection: downloadSelection
+                        downloadSelection: downloadSelection,
+                        onRemoveSong: onRemoveSong
                     )
 
                     if song.id != tracks.last?.id {
@@ -50,6 +52,7 @@ private struct PlaylistTrackRow: View {
     let index: Int
     let showsArtwork: Bool
     let downloadSelection: MusicCollectionDownloadCoordinator?
+    let onRemoveSong: ((Song) -> Void)?
 
     @Environment(\.openMusicRoute) private var openMusicRoute
     @Environment(PlayerStore.self) private var player
@@ -197,6 +200,13 @@ private struct PlaylistTrackRow: View {
                         presentedSheet = .addToPlaylist(song)
                     } label: {
                         Label("ui.playlists.add_to", systemImage: "text.badge.plus")
+                    }
+
+                    if let onRemoveSong {
+                        Divider()
+                        Button("ui.playlists.remove_song", systemImage: "minus.circle", role: .destructive) {
+                            onRemoveSong(song)
+                        }
                     }
 
                     Menu {

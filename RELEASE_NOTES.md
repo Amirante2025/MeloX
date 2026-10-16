@@ -4,6 +4,8 @@
 
 ### 简体中文
 
+- 增加了从自建歌单移除歌曲，操作后同步更新列表、歌曲数量与分页位置
+
 - 增加了删除自建歌单，支持删除确认与音乐库同步更新
 
 - 增加了新建公开与私密歌单，支持在添加歌曲时直接创建歌单
@@ -15,6 +17,8 @@
 - 修复了 iPad 播放器收起与展开歌词按钮的尺寸和对齐问题
 
 ### English
+
+- Added removing songs from owned playlists with synchronized track counts and pagination
 
 - Added deletion of owned playlists with confirmation and immediate library updates
 
@@ -30,6 +34,8 @@
 
 ### 简体中文
 
+- 增加了从自建歌单移除歌曲，操作后同步更新列表、歌曲数量与分页位置
+
 - 增加了删除自建歌单，支持删除确认与音乐库同步更新
 
 - 增加了新建公开与私密歌单，支持在添加歌曲时直接创建歌单
@@ -38,6 +44,8 @@
 - 修复了歌词跳转后与音频时间轴不同步的问题
 
 ### English
+
+- Added removing songs from owned playlists with synchronized track counts and pagination
 
 - Added deletion of owned playlists with confirmation and immediate library updates
 

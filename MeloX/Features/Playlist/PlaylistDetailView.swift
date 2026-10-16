@@ -16,6 +16,10 @@ struct PlaylistDetailView: View {
     private var setTabViewBottomAccessorySuppressed
 
     @State private var playlist: Playlist?
+    @State private var pendingRemoval: Song?
+    @State private var isRemovingTrack = false
+    @State private var removalError: String?
+
     @State private var phase: LoadingPhase = .loading
     @State private var reloadToken = 0
     @State private var artworkPalette: ArtworkDetailPalette?
@@ -80,8 +84,36 @@ struct PlaylistDetailView: View {
             onLoadMore: { await loadMoreTracks() },
             onPlayAll: { shuffled in
                 await playAll(shuffled: shuffled)
-            }
+            },
+            onRemoveSong: library.canDelete(displayedPlaylist) && !isLoadingMoreTracks
+                ? { pendingRemoval = $0 }
+                : nil
         )
+        .disabled(isRemovingTrack)
+        .confirmationDialog(
+            "ui.playlists.remove_song",
+            isPresented: Binding(
+                get: { pendingRemoval != nil },
+                set: { if !$0 { pendingRemoval = nil } }
+            ),
+            titleVisibility: .visible,
+            presenting: pendingRemoval
+        ) { song in
+            Button("ui.playlists.remove_song", role: .destructive) {
+                Task { await removeSong(song) }
+            }
+            Button("ui.common.cancel", role: .cancel) {}
+        } message: { song in
+            Text(L10n.format("ui.playlists.remove_song.message", song.name))
+        }
+        .alert("ui.library.error.title", isPresented: Binding(
+            get: { removalError != nil },
+            set: { if !$0 { removalError = nil } }
+        )) {
+            Button("ui.common.ok", role: .cancel) { removalError = nil }
+        } message: {
+            Text(removalError ?? "")
+        }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .searchable(
@@ -415,9 +447,26 @@ struct PlaylistDetailView: View {
         }
     }
 
+    private func removeSong(_ song: Song) async {
+        guard let playlist, !isLoadingMoreTracks else { return }
+        isRemovingTrack = true
+        defer { isRemovingTrack = false }
+        do {
+            try await library.remove(song: song, from: playlist)
+            guard var updated = self.playlist else { return }
+            if let index = updated.removeSong(id: song.id), index < loadedTrackOffset {
+                loadedTrackOffset -= 1
+            }
+            self.playlist = updated
+        } catch {
+            removalError = error.localizedDescription
+        }
+    }
+
     private func loadMoreTracks() async {
         guard let currentPlaylist = playlist,
               !isLoadingMoreTracks,
+              !isRemovingTrack,
               loadedTrackOffset < currentPlaylist.trackIDs.count else {
             return
         }
