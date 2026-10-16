@@ -4,64 +4,64 @@
 
 ### 简体中文
 
-- 修复了 Apple Music 歌词快速换句时滚动追赶不及的问题，按剩余时间压缩动画并及时对齐当前句
-- 优化了全屏天际歌词换句衔接，保持歌词视图与换行布局稳定，避免长短句切换时重排和跳动
-- 调整了音乐库页面切换入口，点击导航标题即可选择分类，腾出列表内容空间
-- 修复了 iPad 全屏歌词上下露底与退出按钮被状态栏遮挡的问题
 - 增加了歌手关注与取消关注，以及可搜索的已关注歌手音乐库页面
-- 增加了原生搜索联想，支持输入补全与通用设置开关
-- 优化了搜索分类切换，复用当前关键词的已加载结果并防止旧请求覆盖新搜索
-- 增加了从自建歌单移除歌曲，操作后同步更新列表、歌曲数量与分页位置
-- 增加了删除自建歌单，支持删除确认与音乐库同步更新
+- 增加了搜索联想与输入补全，可在通用设置中开启或关闭
+- 增加了从自建歌单移除歌曲的功能
+- 增加了自建歌单删除功能，支持删除前确认
 - 增加了新建公开与私密歌单，支持在添加歌曲时直接创建歌单
-- 更换了 iOS 音频播放引擎，优化了跳转、暂停与重播的进度同步
-- 修复了歌词跳转后与音频时间轴不同步的问题
+- 修复了 Apple Music 歌词快速换句时滚动跟不上播放进度的问题
+- 修复了 iPad 全屏歌词边缘露出播放器背景、退出按钮被状态栏遮挡的问题
+- 修复了歌词跳转后与歌曲播放不同步的问题
 - 修复了 EVA 歌词界面进入时未随背景渐入的问题
-- 调整了 iPad 播放器布局，支持桌面端样式的双栏歌词、队列与常驻播放控制
 - 修复了 iPad 播放器收起与展开歌词按钮的尺寸和对齐问题
+- 优化了全屏天际歌词的换句动画，衔接更自然
+- 优化了搜索分类切换，返回已查看的分类时更快
+- 优化了跳转、暂停与重播时的播放进度显示
+- 优化了 iPad 播放器，采用桌面端样式的双栏布局与常驻播放控制
 
 ### English
 
-- Fixed Apple Music lyrics falling behind during rapid line changes by fitting animations to the remaining time and promptly aligning the current line
-- Improved full-screen Skyline lyric transitions with persistent line views and stable wrapping to prevent layout shifts between lines
-- Moved the library category picker into the navigation title menu to free up content space
-- Fixed exposed background bands and the exit button overlapping the status bar in iPad full-screen lyrics
 - Added artist follow controls and a searchable Followed Artists library page
-- Added native search suggestions with text completion and a General settings toggle
-- Improved search category switching with cached results and protection against stale responses
-- Added removing songs from owned playlists with synchronized track counts and pagination
-- Added deletion of owned playlists with confirmation and immediate library updates
+- Added search suggestions and text completion, with a toggle in General settings
+- Added the ability to remove songs from your own playlists
+- Added deletion of your own playlists with confirmation
 - Added public and private playlist creation, including creating a playlist while adding a song
-- Replaced the iOS audio playback engine to improve progress synchronization when seeking, pausing, and replaying tracks
-- Fixed lyrics falling out of sync with audio after seeking
+- Fixed Apple Music lyrics falling behind playback during rapid line changes
+- Fixed the player background showing around iPad full-screen lyrics and the exit button overlapping the status bar
+- Fixed lyrics falling out of sync with playback after seeking
 - Fixed EVA lyrics appearing abruptly instead of fading in with the background
-- Updated the iPad player with a desktop-style two-column layout for lyrics, the queue, and persistent playback controls
 - Fixed the size and alignment of the iPad player's collapse and expand-lyrics buttons
+- Improved full-screen Skyline lyrics with smoother transitions between lines
+- Improved search category switching so previously viewed results appear faster
+- Improved progress display when seeking, pausing, and replaying songs
+- Improved the iPad player with a desktop-style two-column layout and persistent playback controls
 
 ## macOS
 
 ### 简体中文
 
-- 修复了 Apple Music 歌词快速换句时滚动追赶不及的问题，按剩余时间压缩动画并及时对齐当前句
-- 优化了搜索重复提交时的请求衔接，避免已被替代的等待请求继续发出
-- 增加了已关注歌手音乐库页面，优化了歌手关注操作的状态同步
-- 增加了原生搜索联想，支持输入补全与通用设置开关
-- 优化了搜索分类切换，复用当前关键词的已加载结果并防止旧请求覆盖新搜索
-- 增加了从自建歌单移除歌曲，操作后同步更新列表、歌曲数量与分页位置
-- 增加了删除自建歌单，支持删除确认与音乐库同步更新
+- 增加了可搜索的已关注歌手音乐库页面
+- 增加了搜索联想与输入补全，可在通用设置中开启或关闭
+- 增加了从自建歌单移除歌曲的功能
+- 增加了自建歌单删除功能，支持删除前确认
 - 增加了新建公开与私密歌单，支持在添加歌曲时直接创建歌单
-- 更换了音频播放引擎，优化了跳转、暂停与重播的进度同步
-- 修复了歌词跳转后与音频时间轴不同步的问题
+- 修复了 Apple Music 歌词快速换句时滚动跟不上播放进度的问题
+- 修复了歌词跳转后与歌曲播放不同步的问题
+- 优化了歌手关注与取消关注时的状态显示
+- 优化了搜索分类切换，返回已查看的分类时更快
+- 优化了重复提交搜索时的体验
+- 优化了跳转、暂停与重播时的播放进度显示
 
 ### English
 
-- Fixed Apple Music lyrics falling behind during rapid line changes by fitting animations to the remaining time and promptly aligning the current line
-- Improved repeated search submission by discarding superseded requests before they start
-- Added a Followed Artists library page and improved follow-state updates
-- Added native search suggestions with text completion and a General settings toggle
-- Improved search category switching with cached results and protection against stale responses
-- Added removing songs from owned playlists with synchronized track counts and pagination
-- Added deletion of owned playlists with confirmation and immediate library updates
+- Added a searchable Followed Artists library page
+- Added search suggestions and text completion, with a toggle in General settings
+- Added the ability to remove songs from your own playlists
+- Added deletion of your own playlists with confirmation
 - Added public and private playlist creation, including creating a playlist while adding a song
-- Replaced the audio playback engine to improve progress synchronization when seeking, pausing, and replaying tracks
-- Fixed lyrics falling out of sync with audio after seeking
+- Fixed Apple Music lyrics falling behind playback during rapid line changes
+- Fixed lyrics falling out of sync with playback after seeking
+- Improved follow-status updates when following or unfollowing artists
+- Improved search category switching so previously viewed results appear faster
+- Improved the experience when submitting the same search repeatedly
+- Improved progress display when seeking, pausing, and replaying songs
