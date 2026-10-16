@@ -18,20 +18,20 @@ struct NowPlayingTabletView: View {
     @State private var showsTextPVControls = true
 
     var body: some View {
-        GeometryReader { proxy in
-            let layout = NowPlayingTabletLayout(viewport: proxy.size)
+        ZStack(alignment: .topLeading) {
+            if showsFullScreenLyrics, page == .lyrics {
+                fullScreenLyrics
+                    .transition(.opacity)
+            } else {
+                GeometryReader { proxy in
+                    let layout = NowPlayingTabletLayout(viewport: proxy.size)
 
-            ZStack(alignment: .topLeading) {
-                if showsFullScreenLyrics, page == .lyrics {
-                    fullScreenLyrics
-                        .transition(.opacity)
-                } else {
                     standardPlayer(layout: layout)
-                        .transition(.opacity)
+                        .frame(width: proxy.size.width, height: proxy.size.height)
+                        .clipped()
                 }
+                .transition(.opacity)
             }
-            .frame(width: proxy.size.width, height: proxy.size.height)
-            .clipped()
         }
         .onChange(of: page) {
             showsFullScreenLyrics = false
