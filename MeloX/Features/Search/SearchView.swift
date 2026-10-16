@@ -7,6 +7,7 @@ struct SearchView: View {
     @Environment(AppSettings.self) private var settings
 
     @State private var query = ""
+    @State private var resultCache = SearchResultCache()
     @State private var scope: SearchKind = .songs
     @State private var phase: LoadingPhase = .loaded
     @State private var songs: [Song] = []
@@ -243,6 +244,7 @@ struct SearchView: View {
         let keywords = request.query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !keywords.isEmpty else {
             clearResults()
+            resultCache.clear()
             recognizedLink = nil
             linkedSong = nil
             phase = .loaded
@@ -257,6 +259,12 @@ struct SearchView: View {
 
         recognizedLink = nil
         linkedSong = nil
+        if let cached = resultCache.value(for: keywords, kind: request.kind) {
+            apply(cached)
+            phase = .loaded
+            completedRequest = request
+            return
+        }
         phase = .loading
         try? await Task.sleep(for: .milliseconds(350))
         guard !Task.isCancelled else { return }
@@ -264,11 +272,7 @@ struct SearchView: View {
         do {
             let result = try await api.search(keywords, kind: request.kind)
             guard !Task.isCancelled else { return }
-            songs = result.songs ?? []
-            albums = result.albums ?? []
-            artists = result.artists ?? []
-            playlists = result.playlists ?? []
-            podcasts = result.podcasts ?? []
+            apply(result)
 
             if request.kind == .songs, !songs.isEmpty {
                 let details = try? await api.songDetails(ids: songs.map(\.id))
@@ -277,6 +281,11 @@ struct SearchView: View {
                     songs = details
                 }
             }
+            resultCache.insert(
+                SearchPayload(songs: songs, albums: albums, artists: artists, playlists: playlists, podcasts: podcasts),
+                for: keywords,
+                kind: request.kind
+            )
             phase = .loaded
             completedRequest = request
         } catch is CancellationError {
@@ -284,6 +293,14 @@ struct SearchView: View {
         } catch {
             phase = .failed(error.localizedDescription)
         }
+    }
+
+    private func apply(_ result: SearchPayload) {
+        songs = result.songs ?? []
+        albums = result.albums ?? []
+        artists = result.artists ?? []
+        playlists = result.playlists ?? []
+        podcasts = result.podcasts ?? []
     }
 
     private func resolve(

@@ -14,13 +14,28 @@ private final class DesktopSearchStore {
     @ObservationIgnored
     private var activeSearchID: UUID?
 
-    func search(using model: DesktopAppModel) async {
+    @ObservationIgnored
+    private var resultCache = SearchResultCache()
+
+    func search(using model: DesktopAppModel, debounced: Bool = false) async {
         let keyword = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !keyword.isEmpty else {
             activeSearchID = nil
+            resultCache.clear()
             isSearching = false
             payload = nil
             errorMessage = nil
+            return
+        }
+
+        let requestedKind = kind
+        let requestedSource = source
+        if requestedSource == .catalog,
+           let cached = resultCache.value(for: keyword, kind: requestedKind) {
+            activeSearchID = nil
+            payload = cached
+            errorMessage = nil
+            isSearching = false
             return
         }
 
@@ -35,11 +50,15 @@ private final class DesktopSearchStore {
         }
 
         do {
+            if debounced {
+                try await Task.sleep(for: .milliseconds(320))
+            }
+            try Task.checkCancellation()
             let loadedPayload: SearchPayload
-            if source == .catalog {
+            if requestedSource == .catalog {
                 loadedPayload = try await model.api.search(
                     keyword,
-                    kind: kind,
+                    kind: requestedKind,
                     limit: 60
                 )
             } else {
@@ -48,7 +67,11 @@ private final class DesktopSearchStore {
                     model: model
                 )
             }
+            try Task.checkCancellation()
             guard activeSearchID == searchID else { return }
+            if requestedSource == .catalog {
+                resultCache.insert(loadedPayload, for: keyword, kind: requestedKind)
+            }
             payload = loadedPayload
         } catch is CancellationError {
             return
@@ -221,13 +244,7 @@ struct DesktopSearchView: View {
             }
         }
         .task(id: searchRequestID) {
-            guard !store.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-                await store.search(using: model)
-                return
-            }
-            try? await Task.sleep(for: .milliseconds(320))
-            guard !Task.isCancelled else { return }
-            await store.search(using: model)
+            await store.search(using: model, debounced: true)
         }
         .onChange(
             of: model.settings.isContentFeatureEnabled(.podcasts)

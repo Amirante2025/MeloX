@@ -2,7 +2,7 @@ import Foundation
 import Network
 import Observation
 
-enum SearchKind: Int, CaseIterable, Identifiable {
+enum SearchKind: Int, CaseIterable, Identifiable, Hashable {
     case songs = 1
     case albums = 10
     case artists = 100
