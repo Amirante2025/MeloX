@@ -4,6 +4,7 @@
 
 ### 简体中文
 
+- 优化了全屏天际歌词换句衔接，保持歌词视图与换行布局稳定，避免长短句切换时重排和跳动
 - 调整了音乐库页面切换入口，点击导航标题即可选择分类，腾出列表内容空间
 - 修复了 iPad 全屏歌词上下露底与退出按钮被状态栏遮挡的问题
 - 增加了歌手关注与取消关注，以及可搜索的已关注歌手音乐库页面
@@ -20,6 +21,7 @@
 
 ### English
 
+- Improved full-screen Skyline lyric transitions with persistent line views and stable wrapping to prevent layout shifts between lines
 - Moved the library category picker into the navigation title menu to free up content space
 - Fixed exposed background bands and the exit button overlapping the status bar in iPad full-screen lyrics
 - Added artist follow controls and a searchable Followed Artists library page

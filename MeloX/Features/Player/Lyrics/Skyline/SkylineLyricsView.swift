@@ -128,10 +128,6 @@ struct SkylineLyricsView: View {
         at activeIndex: Int,
         in size: CGSize
     ) -> some View {
-        let line = lyrics[activeIndex]
-        let nextLine = lyrics.indices.contains(activeIndex + 1)
-            ? lyrics[activeIndex + 1]
-            : nil
         let preferences = settings.skylineLyrics
         let fontScale = CGFloat(
             preferences.currentLyricFontSize / settings.lyricsFontSize
@@ -144,15 +140,15 @@ struct SkylineLyricsView: View {
             && !hasSyllableSyncedLyrics
 
         return SkylineCentralLyricsView(
-            line: line,
-            nextLine: nextLine,
+            lyrics: lyrics,
+            activeIndex: activeIndex,
             usesPseudoTiming: usesPseudoTiming,
             fontScale: fontScale,
             currentLyricFontSize: CGFloat(preferences.currentLyricFontSize),
             nextLyricFontSize: nextLyricFontSize,
             nextLyricOpacity: preferences.nextLyricOpacity,
             spacing: currentLyricsSpacing,
-            width: size.width * currentLyricsWidth,
+            size: CGSize(width: size.width * currentLyricsWidth, height: size.height),
             accentColor: accentColor,
             maximumPlaybackScale: CGFloat(
                 preferences.currentLyricMaximumScale
