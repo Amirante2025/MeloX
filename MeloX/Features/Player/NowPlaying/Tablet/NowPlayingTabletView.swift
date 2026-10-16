@@ -85,8 +85,8 @@ struct NowPlayingTabletView: View {
                         .font(.system(size: 17, weight: .semibold))
                         .frame(width: 44, height: 44)
                 }
-                .buttonStyle(.glass)
-                .buttonBorderShape(.circle)
+                .buttonStyle(.plain)
+                .glassEffect(.clear.interactive(), in: .circle)
                 .accessibilityLabel("ui.player.collapse")
 
                 Spacer()
@@ -113,8 +113,8 @@ struct NowPlayingTabletView: View {
                                     .font(.system(size: 17, weight: .medium))
                                     .frame(width: 44, height: 44)
                             }
-                            .buttonStyle(.glass)
-                            .buttonBorderShape(.circle)
+                            .buttonStyle(.plain)
+                            .glassEffect(.clear.interactive(), in: .circle)
                             .accessibilityLabel(
                                 settings.lyricsStyle == .textPV
                                     ? L10n.string("ui.settings.lyrics.style.text_pv")
