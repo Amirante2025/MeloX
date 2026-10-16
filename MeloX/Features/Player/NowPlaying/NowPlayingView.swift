@@ -1,9 +1,11 @@
 import SwiftUI
+import UIKit
 
 struct NowPlayingView: View {
     private static let portraitHorizontalPadding: CGFloat = 32
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
     @Environment(\.accessibilityVoiceOverEnabled)
     private var accessibilityVoiceOverEnabled
@@ -54,7 +56,21 @@ struct NowPlayingView: View {
                 }
 
                 if let song = player.currentSong {
-                    if usesFullScreenTextPV {
+                    if usesTabletLayout {
+                        NowPlayingTabletView(
+                            page: pageSelection,
+                            pageTransition: pageTransition,
+                            song: song,
+                            lyrics: lyrics,
+                            lyricError: lyricError,
+                            highlightedLyricID: highlightedLyricID,
+                            artworkNamespace: pageArtworkNamespace,
+                            onDismiss: { dismiss() },
+                            onLyricsContentPrepared: {
+                                markLyricsContentPrepared(for: song.id)
+                            }
+                        )
+                    } else if usesFullScreenTextPV {
                         TextPVFullScreenPlayerView(
                             page: pageSelection,
                             showsControls: $showsLyricsControls,
@@ -219,6 +235,11 @@ struct NowPlayingView: View {
                 registerAppleMusicControlsActivity()
             }
         }
+        .onChange(of: usesTabletLayout) {
+            cancelAppleMusicControlsAutoHide()
+            showsLyricsControls = true
+            registerAppleMusicControlsActivity()
+        }
         .onChange(
             of: settings.appleMusicLyricsInterfaceAutoHideDelay
         ) {
@@ -345,7 +366,9 @@ struct NowPlayingView: View {
     }
 
     private var usesAutoHidingAppleMusicInterface: Bool {
-        page == .lyrics && settings.lyricsStyle == .appleMusic
+        !usesTabletLayout
+            && page == .lyrics
+            && settings.lyricsStyle == .appleMusic
     }
 
     private var lyrics: [LyricLine] {
@@ -382,7 +405,12 @@ struct NowPlayingView: View {
     }
 
     private var usesFullScreenTextPV: Bool {
-        page == .lyrics && settings.lyricsStyle == .textPV
+        !usesTabletLayout && page == .lyrics && settings.lyricsStyle == .textPV
+    }
+
+    private var usesTabletLayout: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+            && horizontalSizeClass == .regular
     }
 
     private var usesMonochromeLyricsBackground: Bool {

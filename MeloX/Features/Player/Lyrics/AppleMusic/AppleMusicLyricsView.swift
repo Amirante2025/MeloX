@@ -78,6 +78,7 @@ struct AppleMusicLyricsView: View {
     let isActive: Bool
     let isInterfaceHidden: Bool
     let bottomOverlayHeight: CGFloat
+    let focusAnchorOffset: CGFloat?
     let onInterfaceInteraction: (() -> Void)?
     let onInterfaceVisibilityChange: ((Bool) -> Void)?
     let onInitialFocusPrepared: (() -> Void)?
@@ -125,6 +126,7 @@ struct AppleMusicLyricsView: View {
         isActive: Bool = true,
         isInterfaceHidden: Bool = false,
         bottomOverlayHeight: CGFloat = 0,
+        focusAnchorOffset: CGFloat? = nil,
         onInterfaceInteraction: (() -> Void)? = nil,
         onInterfaceVisibilityChange: ((Bool) -> Void)? = nil,
         onInitialFocusPrepared: (() -> Void)? = nil
@@ -135,6 +137,7 @@ struct AppleMusicLyricsView: View {
         self.isActive = isActive
         self.isInterfaceHidden = isInterfaceHidden
         self.bottomOverlayHeight = bottomOverlayHeight
+        self.focusAnchorOffset = focusAnchorOffset
         self.onInterfaceInteraction = onInterfaceInteraction
         self.onInterfaceVisibilityChange = onInterfaceVisibilityChange
         self.onInitialFocusPrepared = onInitialFocusPrepared
@@ -1443,6 +1446,24 @@ struct AppleMusicLyricsView: View {
 
     private func lyricsFocusPosition(for viewportHeight: CGFloat) -> CGFloat {
         guard viewportHeight > 0 else { return preferredLyricsFocusPosition }
+        if let focusAnchorOffset {
+            let focusedID = requestedFocusLyricID
+                ?? visualCascadeFocusLyricID
+                ?? highlightedLyricID
+            let focusedHeight = focusedID.flatMap {
+                lyricGeometryCache.frames[$0]?.height
+                    ?? lyricGeometryCache.layoutHeights[$0]
+            } ?? UIFont.systemFont(
+                ofSize: CGFloat(resolvedLyricsFontSize),
+                weight: resolvedLyricsFontWeight.uiKitWeight
+            ).lineHeight
+            // Align the focused row's center with the artwork, as on desktop.
+            return min(max(
+                (focusAnchorOffset - focusedHeight * 0.5)
+                    / max(viewportHeight - focusedHeight, 1),
+                0
+            ), 1)
+        }
         let referenceHeight = referenceLyricsViewportHeight(
             for: viewportHeight
         )
