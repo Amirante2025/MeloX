@@ -55,6 +55,7 @@ private final class DesktopSearchStore {
                 try await Task.sleep(for: .milliseconds(320))
             }
             try Task.checkCancellation()
+            guard activeSearchID == searchID else { return }
             let loadedPayload: SearchPayload
             if requestedSource == .catalog {
                 loadedPayload = try await model.api.search(

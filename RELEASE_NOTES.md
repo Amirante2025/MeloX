@@ -34,6 +34,7 @@
 
 ### 简体中文
 
+- 优化了搜索重复提交时的请求衔接，避免已被替代的等待请求继续发出
 - 增加了已关注歌手音乐库页面，优化了歌手关注操作的状态同步
 - 增加了原生搜索联想，支持输入补全与通用设置开关
 - 优化了搜索分类切换，复用当前关键词的已加载结果并防止旧请求覆盖新搜索
@@ -45,6 +46,7 @@
 
 ### English
 
+- Improved repeated search submission by discarding superseded requests before they start
 - Added a Followed Artists library page and improved follow-state updates
 - Added native search suggestions with text completion and a General settings toggle
 - Improved search category switching with cached results and protection against stale responses
