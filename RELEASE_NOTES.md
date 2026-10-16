@@ -4,6 +4,7 @@
 
 ### 简体中文
 
+- 修复了 Apple Music 歌词快速换句时滚动追赶不及的问题，按剩余时间压缩动画并及时对齐当前句
 - 优化了全屏天际歌词换句衔接，保持歌词视图与换行布局稳定，避免长短句切换时重排和跳动
 - 调整了音乐库页面切换入口，点击导航标题即可选择分类，腾出列表内容空间
 - 修复了 iPad 全屏歌词上下露底与退出按钮被状态栏遮挡的问题
@@ -21,6 +22,7 @@
 
 ### English
 
+- Fixed Apple Music lyrics falling behind during rapid line changes by fitting animations to the remaining time and promptly aligning the current line
 - Improved full-screen Skyline lyric transitions with persistent line views and stable wrapping to prevent layout shifts between lines
 - Moved the library category picker into the navigation title menu to free up content space
 - Fixed exposed background bands and the exit button overlapping the status bar in iPad full-screen lyrics
@@ -40,6 +42,7 @@
 
 ### 简体中文
 
+- 修复了 Apple Music 歌词快速换句时滚动追赶不及的问题，按剩余时间压缩动画并及时对齐当前句
 - 优化了搜索重复提交时的请求衔接，避免已被替代的等待请求继续发出
 - 增加了已关注歌手音乐库页面，优化了歌手关注操作的状态同步
 - 增加了原生搜索联想，支持输入补全与通用设置开关
@@ -52,6 +55,7 @@
 
 ### English
 
+- Fixed Apple Music lyrics falling behind during rapid line changes by fitting animations to the remaining time and promptly aligning the current line
 - Improved repeated search submission by discarding superseded requests before they start
 - Added a Followed Artists library page and improved follow-state updates
 - Added native search suggestions with text completion and a General settings toggle
