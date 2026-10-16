@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct LibraryView: View {
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(LibraryStore.self) private var library
     @Environment(AppSettings.self) private var settings
 
@@ -31,12 +32,13 @@ struct LibraryView: View {
     var body: some View {
         VStack(spacing: 0) {
             if fixedPage == nil, availablePages.count > 1 {
-                Picker("ui.library.category_picker", selection: $section) {
-                    ForEach(availablePages) { item in
-                        Text(item.title).tag(item)
+                Group {
+                    if availablePages.count > 4, horizontalSizeClass == .compact {
+                        pagePicker.pickerStyle(.menu)
+                    } else {
+                        pagePicker.pickerStyle(.segmented)
                     }
                 }
-                .pickerStyle(.segmented)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
                 .background(.background)
@@ -120,6 +122,14 @@ struct LibraryView: View {
         }
     }
 
+    private var pagePicker: some View {
+        Picker("ui.library.category_picker", selection: $section) {
+            ForEach(availablePages) { item in
+                Text(item.title).tag(item)
+            }
+        }
+    }
+
     private var loginUnavailableView: some View {
         ContentUnavailableView {
             Label("ui.account.login_required", systemImage: "person.crop.circle.badge.exclamationmark")
@@ -152,6 +162,8 @@ struct LibraryView: View {
                 LibrarySongsView(searchQuery: searchQuery)
             case .playlists:
                 LibraryPlaylistsView(searchQuery: searchQuery)
+            case .artists:
+                LibraryArtistsView(searchQuery: searchQuery)
             case .albums:
                 LibraryAlbumsView(searchQuery: searchQuery)
             case .podcasts:
@@ -177,6 +189,8 @@ struct LibraryView: View {
             L10n.string("ui.library.search.favorite_songs")
         case .playlists:
             L10n.string("ui.library.search.favorite_playlists")
+        case .artists:
+            L10n.string("ui.library.artists.search")
         case .albums:
             L10n.string("ui.library.search.favorite_albums")
         case .podcasts:

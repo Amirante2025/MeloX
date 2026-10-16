@@ -2114,3 +2114,8 @@
 "ui.playlists.remove_song.message" = "Remove “%@” from this playlist?";
 
 "ui.settings.general.search_suggestions" = "Search Suggestions";
+
+"ui.library.artists.title" = "Followed Artists";
+"ui.library.artists.search" = "Search followed artists";
+"ui.library.artists.empty" = "No Followed Artists";
+"ui.library.error.favorite_artists" = "Could not load followed artists: %@";

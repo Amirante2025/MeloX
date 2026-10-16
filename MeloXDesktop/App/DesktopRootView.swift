@@ -317,6 +317,7 @@ struct DesktopSectionContentView: View {
              .songs,
              .playlists,
              .albums,
+             .artists,
              .podcasts,
              .downloads,
              .cloud:

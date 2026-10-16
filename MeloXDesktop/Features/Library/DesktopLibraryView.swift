@@ -164,6 +164,8 @@ struct DesktopLibraryView: View {
                 cloudList
             case .playlists:
                 playlistGrid
+            case .artists:
+                artistGrid
             case .albums:
                 albumGrid
             case .podcasts:
@@ -209,6 +211,8 @@ struct DesktopLibraryView: View {
         case .playlists:
             model.library.phase == .loading
                 && model.library.favoritePlaylists.isEmpty
+        case .artists:
+            model.library.phase == .loading && model.library.favoriteArtists.isEmpty
         case .albums:
             model.library.phase == .loading
                 && model.library.favoriteAlbums.isEmpty
@@ -279,6 +283,26 @@ struct DesktopLibraryView: View {
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var artistGrid: some View {
+        if model.library.favoriteArtists.isEmpty {
+            ContentUnavailableView("ui.library.artists.empty", systemImage: "music.mic")
+                .frame(maxWidth: .infinity, minHeight: 260)
+        } else {
+            LazyVGrid(columns: columns, spacing: 24) {
+                ForEach(model.library.favoriteArtists) { artist in
+                    DesktopMediaCard(
+                        title: artist.name,
+                        subtitle: artist.aliases.first,
+                        artworkURL: artist.artworkURL,
+                        isCircular: true,
+                        action: { model.ui.navigate(to: .artist(artist.id)) }
+                    )
                 }
             }
         }

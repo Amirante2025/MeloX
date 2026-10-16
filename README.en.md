@@ -161,6 +161,7 @@ The watch app currently supports independent sign-in, search, daily recommendati
 - Playlist details
 - Album details
 - Artist details
+- Artist follow controls and a followed artists library
 - Song wiki
 - Song comments
 - Comment replies

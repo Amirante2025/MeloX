@@ -9,6 +9,7 @@ final class LibraryStore {
     private(set) var favoriteSongs: [Song] = []
     private(set) var favoritePlaylists: [Playlist] = []
     private(set) var favoriteAlbums: [Album] = []
+    private(set) var favoriteArtists: [Artist] = []
     private(set) var subscribedPodcasts: [Podcast] = []
     private(set) var recentSongs: [Song] = []
     private(set) var likedPlaylistID: Int?
@@ -94,8 +95,21 @@ final class LibraryStore {
         favoritePlaylists.contains { $0.id == playlist.id }
     }
 
+    func contains(artist: Artist) -> Bool {
+        favoriteArtists.contains { $0.id == artist.id }
+    }
+
     func contains(album: Album) -> Bool {
         favoriteAlbums.contains { $0.id == album.id }
+    }
+
+    func setArtistFollowed(_ artist: Artist, isFollowed: Bool) async throws {
+        guard isLoggedIn else { throw APIError.notLoggedIn }
+        try await api.setArtistFollowed(id: artist.id, isFollowed: isFollowed)
+        favoriteArtists.removeAll { $0.id == artist.id }
+        if isFollowed {
+            favoriteArtists.insert(artist, at: 0)
+        }
     }
 
     func setAlbumSubscribed(
@@ -195,6 +209,16 @@ final class LibraryStore {
             } catch {
                 partialFailures.append(
                     L10n.format("ui.library.error.favorite_albums", error.localizedDescription)
+                )
+            }
+
+            do {
+                favoriteArtists = try await api.subscribedArtists()
+            } catch is CancellationError {
+                return
+            } catch {
+                partialFailures.append(
+                    L10n.format("ui.library.error.favorite_artists", error.localizedDescription)
                 )
             }
 
@@ -616,6 +640,7 @@ final class LibraryStore {
         favoriteSongs = []
         favoritePlaylists = []
         favoriteAlbums = []
+        favoriteArtists = []
         subscribedPodcasts = []
         recentSongs = []
         likedPlaylistID = nil

@@ -531,22 +531,12 @@ final class LibraryStore {
         }
     }
 
-    func setArtistFollowed(
-        _ artist: Artist,
-        isFollowed: Bool
-    ) async throws {
+    func setArtistFollowed(_ artist: Artist, isFollowed: Bool) async throws {
         guard isLoggedIn else { throw APIError.notLoggedIn }
-
-        let previousArtists = favoriteArtists
-        setLocalArtist(artist, isFollowed: isFollowed)
-        do {
-            try await api.setArtistFollowed(
-                id: artist.id,
-                isFollowed: isFollowed
-            )
-        } catch {
-            favoriteArtists = previousArtists
-            throw error
+        try await api.setArtistFollowed(id: artist.id, isFollowed: isFollowed)
+        favoriteArtists.removeAll { $0.id == artist.id }
+        if isFollowed {
+            favoriteArtists.insert(artist, at: 0)
         }
     }
 
@@ -713,16 +703,6 @@ final class LibraryStore {
         favoriteAlbums.removeAll { $0.id == album.id }
         if isSubscribed {
             favoriteAlbums.insert(album, at: 0)
-        }
-    }
-
-    private func setLocalArtist(
-        _ artist: Artist,
-        isFollowed: Bool
-    ) {
-        favoriteArtists.removeAll { $0.id == artist.id }
-        if isFollowed {
-            favoriteArtists.insert(artist, at: 0)
         }
     }
 
