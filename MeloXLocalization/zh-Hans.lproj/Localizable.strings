@@ -2105,3 +2105,7 @@
 "ui.playlists.create.name" = "歌单名称";
 "ui.playlists.create.private" = "私密歌单";
 "ui.playlists.create.action" = "创建";
+
+"ui.playlists.delete.title" = "删除歌单？";
+"ui.playlists.delete.action" = "删除歌单";
+"ui.playlists.delete.message" = "将从网易云音乐账号中永久删除“%@”及其中的歌曲列表。";

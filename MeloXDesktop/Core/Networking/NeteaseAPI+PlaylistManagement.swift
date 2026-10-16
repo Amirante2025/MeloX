@@ -1,6 +1,15 @@
 import Foundation
 
 extension NeteaseAPI {
+    func deletePlaylist(id: Int) async throws {
+        // Mirrors @neteaseapireborn/api/module/playlist_delete.js.
+        let response: APIStatusResponse = try await client.weapi(
+            "/api/playlist/remove",
+            data: ["ids": "[\(id)]"]
+        )
+        try validate(responseCode: response.code, message: response.message)
+    }
+
     func createPlaylist(name: String, isPrivate: Bool) async throws -> Playlist {
         // Mirrors @neteaseapireborn/api/module/playlist_create.js.
         let response: PlaylistCreationResponse = try await client.weapi(

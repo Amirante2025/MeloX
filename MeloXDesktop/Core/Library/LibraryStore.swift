@@ -598,6 +598,18 @@ final class LibraryStore {
         }
     }
 
+    func canDelete(_ playlist: Playlist) -> Bool {
+        guard isLoggedIn, let userID = profile?.id else { return false }
+        return playlist.creator?.userID == userID && playlist.id != likedPlaylistID
+    }
+
+    func deletePlaylist(_ playlist: Playlist) async throws {
+        guard isLoggedIn else { throw APIError.notLoggedIn }
+        guard canDelete(playlist) else { throw LibraryOperationError.playlistIsNotOwned }
+        try await api.deletePlaylist(id: playlist.id)
+        favoritePlaylists.removeAll { $0.id == playlist.id }
+    }
+
     func createPlaylist(name: String, isPrivate: Bool) async throws {
         guard isLoggedIn, let profile else { throw APIError.notLoggedIn }
         let created = try await api.createPlaylist(name: name, isPrivate: isPrivate)

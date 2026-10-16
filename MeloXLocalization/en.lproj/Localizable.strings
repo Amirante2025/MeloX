@@ -2105,3 +2105,7 @@
 "ui.playlists.create.name" = "Playlist Name";
 "ui.playlists.create.private" = "Private Playlist";
 "ui.playlists.create.action" = "Create";
+
+"ui.playlists.delete.title" = "Delete Playlist?";
+"ui.playlists.delete.action" = "Delete Playlist";
+"ui.playlists.delete.message" = "“%@” and its track list will be permanently deleted from your NetEase Cloud Music account.";

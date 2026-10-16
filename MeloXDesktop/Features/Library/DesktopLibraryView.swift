@@ -6,6 +6,10 @@ struct DesktopLibraryView: View {
     let section: DesktopSection
 
     @State private var showsCreation = false
+    @State private var pendingDeletion: Playlist?
+    @State private var isDeletingPlaylist = false
+    @State private var deletionError: String?
+
     @State private var showsImporter = false
     @State private var isPreparingPlayback = false
     @State private var playbackErrorMessage: String?
@@ -30,6 +34,32 @@ struct DesktopLibraryView: View {
             .padding(.vertical, 28)
         }
         .navigationTitle(section.title)
+        .disabled(isDeletingPlaylist)
+        .confirmationDialog(
+            "ui.playlists.delete.title",
+            isPresented: Binding(
+                get: { pendingDeletion != nil },
+                set: { if !$0 { pendingDeletion = nil } }
+            ),
+            titleVisibility: .visible,
+            presenting: pendingDeletion
+        ) { playlist in
+            Button("ui.playlists.delete.action", role: .destructive) {
+                Task { await deletePlaylist(playlist) }
+            }
+            Button("ui.common.cancel", role: .cancel) {}
+        } message: { playlist in
+            Text(L10n.format("ui.playlists.delete.message", playlist.name))
+        }
+        .alert("ui.library.error.title", isPresented: Binding(
+            get: { deletionError != nil },
+            set: { if !$0 { deletionError = nil } }
+        )) {
+            Button("ui.common.ok", role: .cancel) { deletionError = nil }
+        } message: {
+            Text(deletionError ?? "")
+        }
+
         .task {
             await model.library.refresh()
             if section == .cloud {
@@ -72,6 +102,16 @@ struct DesktopLibraryView: View {
             }
         } message: {
             Text(playbackErrorMessage ?? L10n.string("ui.desktop.collection.complete_list_failed"))
+        }
+    }
+
+    private func deletePlaylist(_ playlist: Playlist) async {
+        isDeletingPlaylist = true
+        defer { isDeletingPlaylist = false }
+        do {
+            try await model.library.deletePlaylist(playlist)
+        } catch {
+            deletionError = error.localizedDescription
         }
     }
 
@@ -232,6 +272,13 @@ struct DesktopLibraryView: View {
                         action: { model.ui.navigate(to: .playlist(playlist.id)) },
                         playAction: { play(playlist) }
                     )
+                    .contextMenu {
+                        if model.library.canDelete(playlist) {
+                            Button("ui.playlists.delete.action", systemImage: "trash", role: .destructive) {
+                                pendingDeletion = playlist
+                            }
+                        }
+                    }
                 }
             }
         }
