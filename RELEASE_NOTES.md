@@ -4,6 +4,8 @@
 
 ### 简体中文
 
+- 增加了原生搜索联想，支持输入补全与通用设置开关
+
 - 优化了搜索分类切换，复用当前关键词的已加载结果并防止旧请求覆盖新搜索
 
 - 增加了从自建歌单移除歌曲，操作后同步更新列表、歌曲数量与分页位置
@@ -19,6 +21,8 @@
 - 修复了 iPad 播放器收起与展开歌词按钮的尺寸和对齐问题
 
 ### English
+
+- Added native search suggestions with text completion and a General settings toggle
 
 - Improved search category switching with cached results and protection against stale responses
 
@@ -38,6 +42,8 @@
 
 ### 简体中文
 
+- 增加了原生搜索联想，支持输入补全与通用设置开关
+
 - 优化了搜索分类切换，复用当前关键词的已加载结果并防止旧请求覆盖新搜索
 
 - 增加了从自建歌单移除歌曲，操作后同步更新列表、歌曲数量与分页位置
@@ -50,6 +56,8 @@
 - 修复了歌词跳转后与音频时间轴不同步的问题
 
 ### English
+
+- Added native search suggestions with text completion and a General settings toggle
 
 - Improved search category switching with cached results and protection against stale responses
 

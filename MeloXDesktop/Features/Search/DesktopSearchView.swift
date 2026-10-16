@@ -8,6 +8,7 @@ private final class DesktopSearchStore {
     var kind: SearchKind = .songs
     var source: DesktopSearchSource = .catalog
     private(set) var payload: SearchPayload?
+    private(set) var suggestions: [String] = []
     private(set) var isSearching = false
     private(set) var errorMessage: String?
 
@@ -78,6 +79,21 @@ private final class DesktopSearchStore {
         } catch {
             guard activeSearchID == searchID else { return }
             errorMessage = error.localizedDescription
+        }
+    }
+
+    func loadSuggestions(using model: DesktopAppModel) async {
+        suggestions = []
+        let keywords = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard model.settings.searchSuggestionsEnabled,
+              source == .catalog, !keywords.isEmpty else { return }
+        do {
+            try await Task.sleep(for: .milliseconds(300))
+            let loaded = try await model.api.searchSuggestions(keywords)
+            try Task.checkCancellation()
+            suggestions = loaded
+        } catch {
+            return
         }
     }
 
@@ -222,6 +238,14 @@ struct DesktopSearchView: View {
 
                         TextField("ui.search.prompt", text: $store.query)
                             .textFieldStyle(.plain)
+                            .textInputSuggestions(store.suggestions, id: \.self) { suggestion in
+                                Label {
+                                    Text(verbatim: suggestion)
+                                } icon: {
+                                    Image(systemName: "magnifyingglass")
+                                }
+                                .textInputCompletion(suggestion)
+                            }
                             .onSubmit {
                                 Task { await store.search(using: model) }
                             }
@@ -242,6 +266,9 @@ struct DesktopSearchView: View {
                     .frame(width: 164)
                 }
             }
+        }
+        .task(id: "\(model.settings.searchSuggestionsEnabled):\(store.source):\(store.query)") {
+            await store.loadSuggestions(using: model)
         }
         .task(id: searchRequestID) {
             await store.search(using: model, debounced: true)

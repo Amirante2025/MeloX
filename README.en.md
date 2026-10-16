@@ -151,6 +151,7 @@ The watch app currently supports independent sign-in, search, daily recommendati
 - Personal playlists
 - Listened-podcast recommendations
 
+- Search suggestions and text completion
 - Song search
 - Album search
 - Artist search

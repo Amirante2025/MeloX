@@ -7,6 +7,7 @@ struct SearchView: View {
     @Environment(AppSettings.self) private var settings
 
     @State private var query = ""
+    @State private var suggestions: [String] = []
     @State private var resultCache = SearchResultCache()
     @State private var scope: SearchKind = .songs
     @State private var phase: LoadingPhase = .loaded
@@ -37,6 +38,21 @@ struct SearchView: View {
             placement: .navigationBarDrawer(displayMode: .always),
             prompt: "ui.search.prompt"
         )
+        .searchSuggestions {
+            if settings.searchSuggestionsEnabled {
+                ForEach(suggestions, id: \.self) { suggestion in
+                    Label {
+                        Text(verbatim: suggestion)
+                    } icon: {
+                        Image(systemName: "magnifyingglass")
+                    }
+                    .searchCompletion(suggestion)
+                }
+            }
+        }
+        .task(id: "\(settings.searchSuggestionsEnabled):\(query)") {
+            await loadSuggestions()
+        }
         .searchScopes($scope) {
             ForEach(availableSearchKinds) { kind in
                 Text(kind.title).tag(kind)
@@ -91,6 +107,21 @@ struct SearchView: View {
             if !podcastsEnabled, scope == .podcasts {
                 scope = .songs
             }
+        }
+    }
+
+    private func loadSuggestions() async {
+        suggestions = []
+        let keywords = trimmedQuery
+        guard settings.searchSuggestionsEnabled, !keywords.isEmpty,
+              NeteaseMusicLinkParser.parse(keywords) == nil else { return }
+        do {
+            try await Task.sleep(for: .milliseconds(300))
+            let loaded = try await api.searchSuggestions(keywords)
+            try Task.checkCancellation()
+            suggestions = loaded
+        } catch {
+            return
         }
     }
 

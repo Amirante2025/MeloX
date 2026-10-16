@@ -2112,3 +2112,5 @@
 
 "ui.playlists.remove_song" = "从歌单移除";
 "ui.playlists.remove_song.message" = "从此歌单中移除“%@”？";
+
+"ui.settings.general.search_suggestions" = "搜索联想";

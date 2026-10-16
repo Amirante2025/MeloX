@@ -242,6 +242,7 @@ private struct DesktopGeneralSettingsView: View {
             Section("ui.desktop.settings.launch") {
                 Toggle("ui.about.check_updates_on_launch", isOn: $settings.checksUpdatesOnLaunch)
                 Toggle("ui.desktop.settings.launch.clipboard", isOn: $settings.recognizesClipboardLinksOnLaunch)
+                Toggle("ui.settings.general.search_suggestions", isOn: $settings.searchSuggestionsEnabled)
                 Toggle("ui.settings.playback.start_heart_mode", isOn: $settings.startsHeartModeOnLaunch)
             }
         }

@@ -2112,3 +2112,5 @@
 
 "ui.playlists.remove_song" = "Remove from Playlist";
 "ui.playlists.remove_song.message" = "Remove “%@” from this playlist?";
+
+"ui.settings.general.search_suggestions" = "Search Suggestions";
