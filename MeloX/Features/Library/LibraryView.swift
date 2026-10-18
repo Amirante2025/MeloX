@@ -94,6 +94,11 @@ struct LibraryView: View {
                 settings.lastLibraryPage = page
             }
         }
+        .onChange(of: settings.contentFeatures.showsLibrarySearch) { _, showsSearch in
+            if !showsSearch {
+                searchQuery = ""
+            }
+        }
         .onChange(of: availablePages) { _, pages in
             guard fixedPage == nil,
                   let firstPage = pages.first,
@@ -186,7 +191,8 @@ struct LibraryView: View {
     }
 
     private var canSearchCurrentPage: Bool {
-        !availablePages.isEmpty
+        settings.contentFeatures.showsLibrarySearch
+            && !availablePages.isEmpty
             && (section == .downloads || library.isLoggedIn)
     }
 

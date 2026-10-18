@@ -349,7 +349,7 @@
 "ui.settings.catalog.general.subtitle" = "Theme, launch page, clipboard links, and Library memory";
 "ui.settings.catalog.general.keywords" = "theme|light|dark|system|default page|last page|Home|Explore|Library|Search|clipboard|song link|Listen Together link|NetEase link";
 "ui.settings.catalog.about.section" = "About & Development";
-"ui.settings.catalog.about.title" = "About MeloX";
+"ui.settings.catalog.about.title" = "About Music";
 "ui.settings.catalog.about.subtitle" = "Version, updates, community, and open-source licenses";
 "ui.settings.catalog.about.keywords" = "GitHub|Telegram|release notes|check for updates|disclaimer";
 "ui.settings.catalog.developer.title" = "Developer Options";
@@ -394,6 +394,9 @@
 "ui.settings.toolbar_buttons.show_song_recognition" = "Show Song Recognition Button";
 "ui.settings.toolbar_buttons.footer" = "Controls the buttons in the top-right corner of each main page. The Private Messages button only appears when signed in.";
 "ui.settings.toolbar_buttons.keywords" = "toolbar|buttons|show|hide|private messages|song recognition|music recognition";
+"ui.settings.library_search.show" = "Show Library Search";
+"ui.settings.library_search.footer" = "Hides the search field in Library and its separate pages, and clears the current filter. The bottom Search page remains independently available.";
+"ui.settings.library_search.keywords" = "library|search|search field|show|hide|filter";
 "ui.settings.developer.beatnet_panel" = "BeatNet Live Debug Panel";
 "ui.settings.developer.entry" = "Entry Point";
 "ui.settings.developer.entry.value" = "Player More (…) Menu";
@@ -509,8 +512,8 @@
 "ui.about.check_updates" = "Check for Updates";
 "ui.about.updates.section" = "Updates";
 "ui.about.updates.footer" = "Automatic checks only notify you when a new version is available. A failed check never interrupts app launch.";
-"ui.about.melox.section" = "About MeloX";
-"ui.about.description" = "MeloX is built with native SwiftUI and focuses on a clean, fluid NetEase Cloud Music playback and lyrics experience.";
+"ui.about.melox.section" = "About Music";
+"ui.about.description" = "Music is customized from the open-source MeloX project, using native SwiftUI for a clean, fluid NetEase Cloud Music playback and lyrics experience.";
 "ui.about.shareholders.section" = "Shareholders";
 "ui.about.community.section" = "Project & Community";
 "ui.about.website" = "MeloX Website";
@@ -942,7 +945,7 @@
 "ui.legal.unofficial_disclaimer" = "MeloX is an unofficial third-party client and is not affiliated with, partnered with, or authorized by NetEase Cloud Music or its affiliates.";
 "ui.legal.projects_licenses.title" = "Projects & Licenses";
 "ui.onboarding.account.logged_in_message" = "Your favorite songs, playlists, and listening history appear in Library.";
-"ui.onboarding.start" = "Start Using MeloX";
+"ui.onboarding.start" = "Start Using Music";
 "ui.account.login_netease" = "Sign In to NetEase Cloud Music";
 "ui.service.netease_cloud_music" = "NetEase Cloud Music";
 "ui.account.netease_account" = "NetEase Cloud Music Account";

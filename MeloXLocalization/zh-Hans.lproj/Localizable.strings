@@ -349,7 +349,7 @@
 "ui.settings.catalog.general.subtitle" = "主题、启动页面、剪贴板链接与音乐库记忆";
 "ui.settings.catalog.general.keywords" = "主题|浅色|深色|跟随系统|默认页面|上次页面|首页|发现|音乐库|搜索|剪贴板|歌曲链接|一起听链接|网易云链接";
 "ui.settings.catalog.about.section" = "关于与开发";
-"ui.settings.catalog.about.title" = "关于 MeloX";
+"ui.settings.catalog.about.title" = "关于 Music";
 "ui.settings.catalog.about.subtitle" = "版本、更新、社区与开源许可";
 "ui.settings.catalog.about.keywords" = "GitHub|Telegram|更新日志|检查更新|声明";
 "ui.settings.catalog.developer.title" = "开发者选项";
@@ -394,6 +394,9 @@
 "ui.settings.toolbar_buttons.show_song_recognition" = "显示听歌识曲按钮";
 "ui.settings.toolbar_buttons.footer" = "控制各主页面右上角的按钮。私信按钮仅在登录后显示。";
 "ui.settings.toolbar_buttons.keywords" = "工具栏|按钮|显示|隐藏|私信|听歌识曲";
+"ui.settings.library_search.show" = "显示音乐库搜索";
+"ui.settings.library_search.footer" = "关闭后隐藏音乐库及其独立页面中的搜索框，并清除当前筛选；底部搜索页面仍可单独使用。";
+"ui.settings.library_search.keywords" = "音乐库|搜索|搜索框|显示|隐藏|筛选";
 "ui.settings.developer.beatnet_panel" = "BeatNet 实时调试面板";
 "ui.settings.developer.entry" = "入口";
 "ui.settings.developer.entry.value" = "播放器“…”菜单";
@@ -509,8 +512,8 @@
 "ui.about.check_updates" = "检查更新";
 "ui.about.updates.section" = "更新";
 "ui.about.updates.footer" = "自动检查只会在发现新版本时提示，检查失败不会打断应用启动。";
-"ui.about.melox.section" = "关于 MeloX";
-"ui.about.description" = "MeloX 使用原生 SwiftUI 构建，专注于提供简洁、流畅的网易云音乐播放与歌词体验。";
+"ui.about.melox.section" = "关于 Music";
+"ui.about.description" = "Music 基于开源项目 MeloX 定制，使用原生 SwiftUI，专注于提供简洁、流畅的网易云音乐播放与歌词体验。";
 "ui.about.shareholders.section" = "股东";
 "ui.about.community.section" = "项目与社区";
 "ui.about.website" = "MeloX 官网";
@@ -942,13 +945,13 @@
 "ui.legal.unofficial_disclaimer" = "MeloX 是非官方第三方客户端，与网易云音乐及其关联公司不存在隶属、合作或授权关系。";
 "ui.legal.projects_licenses.title" = "项目与许可";
 "ui.onboarding.account.logged_in_message" = "你的收藏歌曲、歌单和播放历史会显示在音乐库中。";
-"ui.onboarding.start" = "开始使用 MeloX";
+"ui.onboarding.start" = "开始使用 Music";
 "ui.account.login_netease" = "登录网易云音乐";
 "ui.service.netease_cloud_music" = "网易云音乐";
 "ui.account.netease_account" = "网易云音乐账号";
 "ui.account.logged_in" = "已登录";
 "ui.onboarding.account.connect" = "连接网易云音乐";
-"ui.onboarding.account.connect_message" = "登录后可以同步个人音乐库并使用账号相关功能。登录并不是开始使用 MeloX 的必要条件。";
+"ui.onboarding.account.connect_message" = "登录后可以同步个人音乐库并使用账号相关功能。登录并不是开始使用 Music 的必要条件。";
 "ui.onboarding.benefit.sync_library" = "同步收藏歌曲、歌单和播放历史";
 "ui.onboarding.benefit.personalized_content" = "访问每日推荐等账号专属内容";
 "ui.onboarding.benefit.local_cookie" = "登录 Cookie 仅保存在本机";

@@ -16,7 +16,7 @@ struct OnboardingWelcomeView: View {
                 .accessibilityHidden(true)
 
             VStack(spacing: 12) {
-                Text("MeloX")
+                Text("Music")
                     .font(.largeTitle.bold())
                     .accessibilityAddTraits(.isHeader)
 

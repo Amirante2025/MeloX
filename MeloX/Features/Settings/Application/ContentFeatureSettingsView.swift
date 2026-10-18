@@ -24,6 +24,17 @@ struct ContentFeatureSettingsView: View {
             }
 
             Section {
+                Toggle(
+                    "ui.settings.library_search.show",
+                    isOn: $contentFeatures.showsLibrarySearch
+                )
+            } header: {
+                Text("ui.navigation.library")
+            } footer: {
+                Text("ui.settings.library_search.footer")
+            }
+
+            Section {
                 ForEach(ContentFeature.availableCases) { feature in
                     Toggle(isOn: binding(for: feature)) {
                         Label {

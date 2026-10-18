@@ -18,9 +18,10 @@ struct AboutView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 72, height: 72)
+                        .clipShape(.rect(cornerRadius: 16))
                         .accessibilityHidden(true)
 
-                    Text("MeloX")
+                    Text("Music")
                         .font(.title2.bold())
 
                     Text("ui.about.tagline")
@@ -48,7 +49,7 @@ struct AboutView: View {
 
                         Spacer()
 
-                        Text("MeloX \(releaseVersion)")
+                        Text("Music \(releaseVersion)")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }

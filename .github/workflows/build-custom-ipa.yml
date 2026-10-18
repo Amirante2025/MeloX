@@ -51,3 +51,37 @@ jobs:
             build/ReleaseNotes.md
           if-no-files-found: error
           retention-days: 14
+
+  preview:
+    name: Capture Music preview / 生成界面预览
+    runs-on: macos-26
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout / 检出代码
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Select Xcode / 选择 Xcode
+        shell: bash
+        run: |
+          set -euo pipefail
+          for candidate in /Applications/Xcode_26.6.app /Applications/Xcode_26.6.0.app /Applications/Xcode.app; do
+            if [[ -d "${candidate}" ]]; then
+              sudo xcode-select -s "${candidate}/Contents/Developer"
+              break
+            fi
+          done
+          xcodebuild -version
+
+      - name: Capture simulator screenshot / 拍摄模拟器截图
+        run: bash .github/scripts/capture_ios_preview.sh
+
+      - name: Upload preview / 上传预览
+        uses: actions/upload-artifact@v7
+        with:
+          name: Music-preview-${{ github.run_number }}
+          path: build/preview/Music-home.png
+          if-no-files-found: error
+          retention-days: 14

@@ -53,6 +53,8 @@ final class ContentFeaturePreferences {
             "melox.contentFeatures.showsPrivateMessagesButton"
         static let showsSongRecognitionButton =
             "melox.contentFeatures.showsSongRecognitionButton"
+        static let showsLibrarySearch =
+            "melox.contentFeatures.showsLibrarySearch"
     }
 
     var showsPrivateMessagesButton: Bool {
@@ -69,6 +71,15 @@ final class ContentFeaturePreferences {
             defaults.set(
                 showsSongRecognitionButton,
                 forKey: Key.showsSongRecognitionButton
+            )
+        }
+    }
+
+    var showsLibrarySearch: Bool {
+        didSet {
+            defaults.set(
+                showsLibrarySearch,
+                forKey: Key.showsLibrarySearch
             )
         }
     }
@@ -92,6 +103,9 @@ final class ContentFeaturePreferences {
         ) as? Bool ?? true
         showsSongRecognitionButton = defaults.object(
             forKey: Key.showsSongRecognitionButton
+        ) as? Bool ?? true
+        showsLibrarySearch = defaults.object(
+            forKey: Key.showsLibrarySearch
         ) as? Bool ?? true
         disabledFeatures = Set(
             (defaults.array(forKey: Key.disabledFeatures) as? [String])?

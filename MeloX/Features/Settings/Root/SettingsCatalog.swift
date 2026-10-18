@@ -103,6 +103,7 @@ enum SettingsCatalog {
                     systemImage: "switch.2",
                     keywords: L10n.keywords("ui.settings.catalog.features.keywords")
                         + L10n.keywords("ui.settings.toolbar_buttons.keywords")
+                        + L10n.keywords("ui.settings.library_search.keywords")
                 ),
                 SettingsCatalogItem(
                     route: .content,

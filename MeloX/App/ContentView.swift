@@ -374,7 +374,7 @@ struct ContentView: View {
                         path: navigationPathBinding(for: tab)
                     ) {
                         tabRoot(for: tab)
-                            .navigationBarTitleDisplayMode(.large)
+                            .toolbarTitleDisplayMode(.inlineLarge)
                             .toolbarBackground(
                                 .ultraThinMaterial,
                                 for: .navigationBar
@@ -410,7 +410,7 @@ struct ContentView: View {
         case .recommended:
             HomeRecommendedView()
                 .navigationTitle("ui.navigation.recommended")
-                .navigationBarTitleDisplayMode(.large)
+                .toolbarTitleDisplayMode(.inlineLarge)
         case .music:
             ExploreView(navigationTitle: L10n.string("ui.navigation.music"))
         case .podcasts:
