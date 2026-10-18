@@ -87,7 +87,8 @@ struct MiniPlayerView: View {
                     .accessibilityLabel("ui.player.next")
                 }
             }
-            .padding(.horizontal, isInline ? 8 : 12)
+            .padding(.leading, isInline ? 12 : 16)
+            .padding(.trailing, isInline ? 8 : 12)
             .padding(.vertical, isInline ? 3 : 6)
             .frame(maxWidth: .infinity)
             .contentShape(.rect)

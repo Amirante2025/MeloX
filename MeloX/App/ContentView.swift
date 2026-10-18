@@ -62,9 +62,7 @@ struct ContentView: View {
 
     private var mainExperience: some View {
         playerAwareTabView
-            .overlay(alignment: .top) {
-                StatusBarBackdrop()
-            }
+            .scrollEdgeEffectStyle(.soft, for: .top)
             .environment(
                 \.openMusicRoute,
                 OpenMusicRouteAction(action: openMusicRoute)
@@ -382,14 +380,6 @@ struct ContentView: View {
                             )
                             .toolbar(
                                 tab == .search ? .visible : .hidden,
-                                for: .navigationBar
-                            )
-                            .toolbarBackground(
-                                .ultraThinMaterial,
-                                for: .navigationBar
-                            )
-                            .toolbarBackgroundVisibility(
-                                .automatic,
                                 for: .navigationBar
                             )
                             .navigationDestination(

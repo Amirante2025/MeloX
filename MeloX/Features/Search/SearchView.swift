@@ -8,6 +8,7 @@ struct SearchView: View {
     @Environment(AppSettings.self) private var settings
 
     @State private var query = ""
+    @State private var pageWidth: CGFloat = 0
     @State private var suggestions: [String] = []
     @State private var resultCache = SearchResultCache()
     @State private var scope: SearchKind = .songs
@@ -33,8 +34,32 @@ struct SearchView: View {
                 searchResults
             }
         }
-        .navigationTitle(pageHeader == nil ? L10n.string("ui.navigation.search") : "")
-        .navigationBarTitleDisplayMode(.inline)
+        .environment(\.scrollingPageHeader, nil)
+        .onGeometryChange(for: CGFloat.self) { geometry in
+            geometry.size.width
+        } action: { pageWidth = $0 }
+        .navigationTitle("ui.navigation.search")
+        .toolbarTitleDisplayMode(.large)
+        .toolbar {
+            if let pageHeader {
+                ToolbarItem(placement: .largeTitle) {
+                    pageHeader
+                        .frame(
+                            width: pageWidth > 40 ? pageWidth - 40 : nil,
+                            alignment: .leading
+                        )
+                }
+                .sharedBackgroundVisibility(.hidden)
+
+                // Keep the collapsed bar dedicated to the native search field.
+                ToolbarItem(placement: .title) {
+                    Color.clear
+                        .frame(width: 1, height: 1)
+                        .accessibilityHidden(true)
+                }
+                .sharedBackgroundVisibility(.hidden)
+            }
+        }
         .searchable(
             text: $query,
             placement: .navigationBarDrawer(displayMode: .always),
@@ -136,9 +161,6 @@ struct SearchView: View {
 
     private var searchResults: some View {
         List {
-            if pageHeader != nil {
-                ScrollingPageListHeader()
-            }
             if phase == .loading {
                 HStack {
                     Spacer()
@@ -224,9 +246,6 @@ struct SearchView: View {
         switch link {
         case .song:
             List {
-                if pageHeader != nil {
-                    ScrollingPageListHeader()
-                }
                 if phase == .loading {
                     HStack {
                         Spacer()
@@ -254,7 +273,6 @@ struct SearchView: View {
         case .listenTogether(let invitation):
             ScrollView {
                 VStack(spacing: 24) {
-                    ScrollingPageHeader()
                     ContentUnavailableView {
                         Label("ui.listen_together.invitation", systemImage: "person.2.wave.2")
                     } description: {

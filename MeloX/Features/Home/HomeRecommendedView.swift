@@ -30,15 +30,6 @@ struct HomeRecommendedView: View {
         )
     }
 
-    private var initialScrollAnchor: UnitPoint {
-        #if DEBUG && targetEnvironment(simulator)
-        if ProcessInfo.processInfo.arguments.contains("--preview-scrolled") {
-            return .center
-        }
-        #endif
-        return .top
-    }
-
     var body: some View {
         content
         .task(
@@ -148,7 +139,6 @@ struct HomeRecommendedView: View {
             .padding(.top, 8)
             .padding(.bottom, 28)
         }
-        .defaultScrollAnchor(initialScrollAnchor)
         .refreshable {
             await load(refresh: true)
         }
