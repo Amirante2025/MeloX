@@ -33,6 +33,7 @@ struct LibraryHistoryView: View {
                     TrackRowView(song: song, showsArtwork: true)
                 }
                 .buttonStyle(.plain)
+                .compactSongListRow()
             }
         }
         .listStyle(.plain)

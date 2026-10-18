@@ -70,6 +70,7 @@ struct DailySongsView: View {
                             TrackRowView(song: song, index: index, showsArtwork: true)
                         }
                         .buttonStyle(.plain)
+                        .compactSongListRow()
                         .swipeActions(edge: .trailing) {
                             Button {
                                 library.toggle(song: song)

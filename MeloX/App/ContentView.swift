@@ -62,7 +62,6 @@ struct ContentView: View {
 
     private var mainExperience: some View {
         playerAwareTabView
-            .scrollEdgeEffectStyle(.soft, for: .top)
             .environment(
                 \.openMusicRoute,
                 OpenMusicRouteAction(action: openMusicRoute)
@@ -378,10 +377,8 @@ struct ContentView: View {
                                 \.scrollingPageHeader,
                                 AnyView(pageHeader(for: tab))
                             )
-                            .toolbar(
-                                tab == .search ? .visible : .hidden,
-                                for: .navigationBar
-                            )
+                            .modifier(StatusBarScrollEffect())
+                            .toolbar(.hidden, for: .navigationBar)
                             .navigationDestination(
                                 for: ContentRoute.self
                             ) { route in

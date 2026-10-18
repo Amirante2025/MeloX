@@ -175,6 +175,7 @@ struct CloudMusicView: View {
                     TrackRowView(song: item.simpleSong, showsArtwork: true)
                 }
                 .buttonStyle(.plain)
+                .compactSongListRow()
                 .disabled(cloud.isDeleting(item))
                 .swipeActions(edge: .trailing) {
                     Button(role: .destructive) {

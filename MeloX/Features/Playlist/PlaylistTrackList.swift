@@ -225,7 +225,7 @@ private struct PlaylistTrackRow: View {
         }
         .padding(.leading, 20)
         .padding(.trailing, 8)
-        .padding(.vertical, showsArtwork ? 8 : 11)
+        .padding(.vertical, showsArtwork ? 4 : 6)
         .background(isCurrentSong ? Color.primary.opacity(0.10) : .clear)
         .musicMatchedTransitionSource(for: .song(song))
         .accessibilityElement(children: .contain)

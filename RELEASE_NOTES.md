@@ -6,8 +6,9 @@
 
 - 迷你播放器封面缩小至 30pt 并向右微调 4pt，搜索与其他标签整合在同一个系统胶囊导航条内
 - 标题与右侧头像同排放在页面内容顶部，随内容自然滚动
-- 顶部改用系统原生的柔和滚动边缘效果，移除常驻渐变模糊
-- 搜索栏位于标题与头像下方，随系统导航栏在滚动和搜索时收至顶部
+- 顶部的系统超薄模糊随滚动渐显，回到页面顶部时完全隐藏
+- 搜索页与其他页面共用标题行，搜索栏在滚动后固定到状态栏下方，点击搜索时自动上移
+- 歌曲列表采用 48pt 封面及上下各 4pt 间距，收紧歌单和音乐库歌曲行的分隔距离
 - 播放页在更多按钮左侧显示星标收藏按钮，可直接收藏或取消收藏歌曲
 - 应用显示名称改为 Music，并使用自定义音乐图标
 - 增加了音乐库搜索框的独立显示开关，关闭时清除当前搜索筛选
@@ -33,8 +34,9 @@
 
 - Reduced mini-player artwork to 30pt, shifted it 4pt to the right, and joined Search with the other tabs in one native capsule
 - Placed large page titles and profile actions in the scrolling content so they move offscreen together
-- Replaced the permanent status-bar blur with the native soft scroll-edge effect
-- Placed the native search field below the title and profile row, allowing it to move to the top when scrolling or searching
+- Made the ultra-thin system status-bar blur fade in with scrolling and disappear at the top
+- Reused the shared page title in Search, pinned the search field below the status bar when scrolling, and moved it up when editing starts
+- Tightened song rows with 48pt artwork and 4pt vertical insets in playlists and the Library
 - Added a Favorite star to the left of More in Now Playing to favorite or unfavorite the current song
 - Renamed the app to Music and applied the supplied custom music icon
 - Added an independent Library search visibility switch that clears the current filter when hidden

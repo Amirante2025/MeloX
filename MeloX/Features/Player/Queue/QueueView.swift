@@ -18,6 +18,7 @@ struct QueueView: View {
                 }
             }
             .buttonStyle(.plain)
+            .compactSongListRow()
         }
         .listStyle(.plain)
         .navigationTitle("ui.player.up_next")

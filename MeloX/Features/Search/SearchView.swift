@@ -8,7 +8,8 @@ struct SearchView: View {
     @Environment(AppSettings.self) private var settings
 
     @State private var query = ""
-    @State private var pageWidth: CGFloat = 0
+    @State private var isSearchFocused = false
+    @State private var viewportHeight: CGFloat = 0
     @State private var suggestions: [String] = []
     @State private var resultCache = SearchResultCache()
     @State private var scope: SearchKind = .songs
@@ -24,66 +25,102 @@ struct SearchView: View {
     @State private var presentedListenTogetherLink:
         NeteaseListenTogetherLink?
 
+    @State private var discoveryRecommendations: [Playlist] = []
+    @State private var discoveryPhase: LoadingPhase = .loading
+
+    private enum ScrollAnchor: Hashable {
+        case searchContent
+    }
+
     var body: some View {
-        Group {
-            if trimmedQuery.isEmpty {
-                SearchDiscoveryView()
-            } else if let recognizedLink {
-                linkResult(for: recognizedLink)
-            } else {
-                searchResults
-            }
-        }
-        .environment(\.scrollingPageHeader, nil)
-        .onGeometryChange(for: CGFloat.self) { geometry in
-            geometry.size.width
-        } action: { pageWidth = $0 }
-        .navigationTitle("ui.navigation.search")
-        .toolbarTitleDisplayMode(.large)
-        .toolbar {
-            if let pageHeader {
-                ToolbarItem(placement: .largeTitle) {
-                    pageHeader
-                        .frame(
-                            width: pageWidth > 40 ? pageWidth - 40 : nil,
-                            alignment: .leading
+        ScrollViewReader { proxy in
+            List {
+                if pageHeader != nil {
+                    ScrollingPageListHeader()
+                }
+
+                Section {
+                    Color.clear
+                        .frame(height: 1)
+                        .listRowInsets(EdgeInsets())
+                        .listRowSeparator(.hidden)
+                        .accessibilityHidden(true)
+                        .id(ScrollAnchor.searchContent)
+
+                    if isSearchFocused, settings.searchSuggestionsEnabled {
+                        ForEach(suggestions, id: \.self) { suggestion in
+                            Button {
+                                query = suggestion
+                                isSearchFocused = false
+                            } label: {
+                                Label {
+                                    Text(verbatim: suggestion)
+                                } icon: {
+                                    Image(systemName: "magnifyingglass")
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+
+                    if trimmedQuery.isEmpty {
+                        SearchDiscoveryView(
+                            recommendations: discoveryRecommendations,
+                            phase: discoveryPhase,
+                            onRetry: {
+                                Task { await loadDiscoveryRecommendations() }
+                            }
+                        )
+                        .listRowInsets(EdgeInsets())
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                    } else if let recognizedLink {
+                        linkResult(for: recognizedLink)
+                    } else {
+                        searchResults
+                    }
+
+                    if !trimmedQuery.isEmpty {
+                        Color.clear
+                            .frame(height: minimumResultsSpacer)
+                            .listRowInsets(EdgeInsets())
+                            .listRowSeparator(.hidden)
+                            .accessibilityHidden(true)
+                    }
+                } header: {
+                    searchControls
+                        .textCase(nil)
+                        .listRowInsets(
+                            EdgeInsets(top: 0, leading: 12, bottom: 8, trailing: 12)
                         )
                 }
-                .sharedBackgroundVisibility(.hidden)
-
-                // Keep the collapsed bar dedicated to the native search field.
-                ToolbarItem(placement: .title) {
-                    Color.clear
-                        .frame(width: 1, height: 1)
-                        .accessibilityHidden(true)
+            }
+            .listStyle(.plain)
+            .listSectionSpacing(0)
+            .environment(\.defaultMinListRowHeight, 1)
+            .scrollDismissesKeyboard(.interactively)
+            .onGeometryChange(for: CGFloat.self) { geometry in
+                geometry.size.height
+            } action: { viewportHeight = $0 }
+            .refreshable {
+                if trimmedQuery.isEmpty {
+                    await loadDiscoveryRecommendations()
                 }
-                .sharedBackgroundVisibility(.hidden)
+            }
+            .onChange(of: isSearchFocused) { _, focused in
+                guard focused else { return }
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    proxy.scrollTo(ScrollAnchor.searchContent, anchor: .top)
+                }
             }
         }
-        .searchable(
-            text: $query,
-            placement: .navigationBarDrawer(displayMode: .always),
-            prompt: "ui.search.prompt"
-        )
-        .searchSuggestions {
-            if settings.searchSuggestionsEnabled {
-                ForEach(suggestions, id: \.self) { suggestion in
-                    Label {
-                        Text(verbatim: suggestion)
-                    } icon: {
-                        Image(systemName: "magnifyingglass")
-                    }
-                    .searchCompletion(suggestion)
-                }
-            }
+        .navigationTitle("ui.navigation.search")
+        .navigationBarTitleDisplayMode(.inline)
+        .task {
+            await loadDiscoveryRecommendations()
         }
         .task(id: "\(settings.searchSuggestionsEnabled):\(query)") {
             await loadSuggestions()
-        }
-        .searchScopes($scope) {
-            ForEach(availableSearchKinds) { kind in
-                Text(kind.title).tag(kind)
-            }
         }
         .overlay {
             if !trimmedQuery.isEmpty, case .failed(let message) = phase {
@@ -96,11 +133,13 @@ struct SearchView: View {
                         : "link.badge.plus",
                     description: Text(message)
                 )
+                .allowsHitTesting(false)
             } else if recognizedLink == nil,
                       !trimmedQuery.isEmpty,
                       phase == .loaded,
                       resultIsEmpty {
                 ContentUnavailableView.search(text: query)
+                    .allowsHitTesting(false)
             }
         }
         .sheet(item: $presentedListenTogetherLink) { invitation in
@@ -137,6 +176,59 @@ struct SearchView: View {
         }
     }
 
+    private var searchControls: some View {
+        VStack(spacing: 8) {
+            NativeSearchBar(text: $query, isFocused: $isSearchFocused)
+                .frame(maxWidth: .infinity)
+                .frame(height: 56)
+
+            if !trimmedQuery.isEmpty {
+                Picker("ui.navigation.search", selection: $scope) {
+                    ForEach(availableSearchKinds) { kind in
+                        Text(kind.title).tag(kind)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, 8)
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // Short result sets still need enough scrollable space for the title to
+    // leave the screen without pushing the focused search field back down.
+    private var minimumResultsSpacer: CGFloat {
+        let resultCount: Int
+        if recognizedLink != nil {
+            resultCount = linkedSong == nil ? 0 : 1
+        } else {
+            switch scope {
+            case .songs: resultCount = songs.count
+            case .albums: resultCount = albums.count
+            case .artists: resultCount = artists.count
+            case .playlists: resultCount = playlists.count
+            case .podcasts: resultCount = podcasts.count
+            }
+        }
+        let suggestionCount = isSearchFocused && settings.searchSuggestionsEnabled
+            ? suggestions.count : 0
+        return max(0, viewportHeight - 56 - CGFloat(resultCount + suggestionCount) * 44)
+    }
+
+    private func loadDiscoveryRecommendations() async {
+        discoveryPhase = .loading
+        do {
+            let recommendations = try await api.recommendedPlaylists(limit: 10)
+            try Task.checkCancellation()
+            discoveryRecommendations = recommendations
+            discoveryPhase = .loaded
+        } catch is CancellationError {
+            return
+        } catch {
+            discoveryPhase = .failed(error.localizedDescription)
+        }
+    }
+
     private func loadSuggestions() async {
         suggestions = []
         let keywords = trimmedQuery
@@ -159,132 +251,120 @@ struct SearchView: View {
         }
     }
 
+    @ViewBuilder
     private var searchResults: some View {
-        List {
-            if phase == .loading {
-                HStack {
-                    Spacer()
-                    ProgressView("ui.search.searching")
-                    Spacer()
+        if phase == .loading {
+            HStack {
+                Spacer()
+                ProgressView("ui.search.searching")
+                Spacer()
+            }
+        }
+
+        switch scope {
+        case .songs:
+            ForEach(songs) { song in
+                Button {
+                    Task { await player.play(song, in: songs) }
+                } label: {
+                    TrackRowView(song: song, showsArtwork: true)
+                }
+                .buttonStyle(.plain)
+                .compactSongListRow()
+                .swipeActions(edge: .trailing) {
+                    Button {
+                        library.toggle(song: song)
+                    } label: {
+                        Label(
+                            library.contains(song: song)
+                                ? L10n.string("ui.common.unfavorite")
+                                : L10n.string("ui.common.favorite"),
+                            systemImage: library.contains(song: song) ? "heart.slash" : "heart"
+                        )
+                    }
+                    .tint(.pink)
                 }
             }
-
-            switch scope {
-            case .songs:
-                ForEach(songs) { song in
-                    Button {
-                        Task { await player.play(song, in: songs) }
-                    } label: {
-                        TrackRowView(song: song, showsArtwork: true)
-                    }
-                    .buttonStyle(.plain)
-                    .swipeActions(edge: .trailing) {
-                        Button {
-                            library.toggle(song: song)
-                        } label: {
-                            Label(
-                                library.contains(song: song)
-                                    ? L10n.string("ui.common.unfavorite")
-                                    : L10n.string("ui.common.favorite"),
-                                systemImage: library.contains(song: song) ? "heart.slash" : "heart"
-                            )
-                        }
-                        .tint(.pink)
-                    }
+        case .albums:
+            ForEach(albums) { album in
+                NavigationLink(value: MusicRoute.album(album)) {
+                    SearchMediaRow(
+                        title: album.name,
+                        subtitle: album.artistText,
+                        artworkURL: album.artworkURL,
+                        circular: false
+                    )
                 }
-            case .albums:
-                ForEach(albums) { album in
-                    NavigationLink(value: MusicRoute.album(album)) {
-                        SearchMediaRow(
-                            title: album.name,
-                            subtitle: album.artistText,
-                            artworkURL: album.artworkURL,
-                            circular: false
-                        )
-                    }
-                    .musicMatchedTransitionSource(for: MusicRoute.album(album))
+                .musicMatchedTransitionSource(for: MusicRoute.album(album))
+            }
+        case .artists:
+            ForEach(artists) { artist in
+                NavigationLink(value: MusicRoute.artist(artist.id)) {
+                    SearchMediaRow(
+                        title: artist.name,
+                        subtitle: artist.aliases.first,
+                        artworkURL: artist.artworkURL,
+                        circular: true
+                    )
                 }
-            case .artists:
-                ForEach(artists) { artist in
-                    NavigationLink(value: MusicRoute.artist(artist.id)) {
-                        SearchMediaRow(
-                            title: artist.name,
-                            subtitle: artist.aliases.first,
-                            artworkURL: artist.artworkURL,
-                            circular: true
-                        )
-                    }
-                    .musicMatchedTransitionSource(for: MusicRoute.artist(artist.id))
+                .musicMatchedTransitionSource(for: MusicRoute.artist(artist.id))
+            }
+        case .playlists:
+            ForEach(playlists) { playlist in
+                NavigationLink(value: MusicRoute.playlist(playlist)) {
+                    SearchMediaRow(
+                        title: playlist.name,
+                        subtitle: L10n.format("ui.common.song_count", playlist.trackCount),
+                        artworkURL: playlist.artworkURL,
+                        circular: false
+                    )
                 }
-            case .playlists:
-                ForEach(playlists) { playlist in
-                    NavigationLink(value: MusicRoute.playlist(playlist)) {
-                        SearchMediaRow(
-                            title: playlist.name,
-                            subtitle: L10n.format("ui.common.song_count", playlist.trackCount),
-                            artworkURL: playlist.artworkURL,
-                            circular: false
-                        )
-                    }
-                    .musicMatchedTransitionSource(for: MusicRoute.playlist(playlist))
-                }
-            case .podcasts:
-                ForEach(podcasts) { podcast in
-                    NavigationLink(
-                        value: MusicRoute.podcast(podcast)
-                    ) {
-                        PodcastListRow(podcast: podcast)
-                    }
+                .musicMatchedTransitionSource(for: MusicRoute.playlist(playlist))
+            }
+        case .podcasts:
+            ForEach(podcasts) { podcast in
+                NavigationLink(
+                    value: MusicRoute.podcast(podcast)
+                ) {
+                    PodcastListRow(podcast: podcast)
                 }
             }
         }
-        .listStyle(.plain)
     }
 
     @ViewBuilder
     private func linkResult(for link: NeteaseMusicLink) -> some View {
         switch link {
         case .song:
-            List {
-                if phase == .loading {
-                    HStack {
-                        Spacer()
-                        ProgressView("ui.search.reading_song_link")
-                        Spacer()
-                    }
-                } else if let linkedSong {
-                    Section("ui.search.section.linked_song") {
-                        NavigationLink(
-                            value: MusicRoute.song(linkedSong)
-                        ) {
-                            TrackRowView(
-                                song: linkedSong,
-                                showsArtwork: true
-                            )
-                        }
-                        .musicMatchedTransitionSource(
-                            for: MusicRoute.song(linkedSong)
-                        )
-                    }
+            if phase == .loading {
+                HStack {
+                    Spacer()
+                    ProgressView("ui.search.reading_song_link")
+                    Spacer()
                 }
+            } else if let linkedSong {
+                Text("ui.search.section.linked_song")
+                    .font(.headline)
+                    .listRowSeparator(.hidden)
+                NavigationLink(value: MusicRoute.song(linkedSong)) {
+                    TrackRowView(song: linkedSong, showsArtwork: true)
+                }
+                .compactSongListRow()
+                .musicMatchedTransitionSource(for: MusicRoute.song(linkedSong))
             }
-            .listStyle(.plain)
 
         case .listenTogether(let invitation):
-            ScrollView {
-                VStack(spacing: 24) {
-                    ContentUnavailableView {
-                        Label("ui.listen_together.invitation", systemImage: "person.2.wave.2")
-                    } description: {
-                        Text("ui.search.listen_together_link_recognized")
-                    } actions: {
-                        Button("ui.clipboard.view_invitation") {
-                            presentedListenTogetherLink = invitation
-                        }
-                        .buttonStyle(.borderedProminent)
-                    }
+            ContentUnavailableView {
+                Label("ui.listen_together.invitation", systemImage: "person.2.wave.2")
+            } description: {
+                Text("ui.search.listen_together_link_recognized")
+            } actions: {
+                Button("ui.clipboard.view_invitation") {
+                    presentedListenTogetherLink = invitation
                 }
+                .buttonStyle(.borderedProminent)
             }
+            .listRowSeparator(.hidden)
         }
     }
 

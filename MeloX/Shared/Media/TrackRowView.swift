@@ -17,7 +17,7 @@ struct TrackRowView: View {
         HStack(spacing: 12) {
             if showsArtwork {
                 ArtworkImage(url: song.album?.artworkURL, cornerRadius: 6)
-                    .frame(width: 44, height: 44)
+                    .frame(width: 48, height: 48)
             } else if let index {
                 Text(
                     (index + 1).formatted(
@@ -29,12 +29,12 @@ struct TrackRowView: View {
                     .frame(width: 26, alignment: .trailing)
             }
 
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 1) {
                 Text(song.name)
                     .font(.body)
                     .lineLimit(1)
                 Text(subtitleText)
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
@@ -57,6 +57,7 @@ struct TrackRowView: View {
                     .foregroundStyle(.secondary)
             }
         }
+        .compactSongListRow(showsArtwork: showsArtwork)
         .contentShape(.rect)
         .musicMatchedTransitionSource(for: .song(song))
         .contextMenu {
@@ -193,6 +194,15 @@ struct TrackRowView: View {
 
     private var favoriteActionSystemImage: String {
         library.contains(song: song) ? "heart.slash" : "heart"
+    }
+}
+
+extension View {
+    func compactSongListRow(showsArtwork: Bool = true) -> some View {
+        listRowInsets(EdgeInsets(top: 4, leading: 20, bottom: 4, trailing: 20))
+            .alignmentGuide(.listRowSeparatorLeading) { _ in
+                showsArtwork ? 60 : 0
+            }
     }
 }
 

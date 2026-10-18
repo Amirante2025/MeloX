@@ -1,12 +1,11 @@
 import SwiftUI
 
 struct SearchDiscoveryView: View {
-    @Environment(NeteaseAPI.self) private var api
     @Environment(AppSettings.self) private var settings
 
-    @State private var recommendations: [Playlist] = []
-    @State private var phase: LoadingPhase = .loading
-    @State private var reloadToken = 0
+    let recommendations: [Playlist]
+    let phase: LoadingPhase
+    let onRetry: () -> Void
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -14,34 +13,25 @@ struct SearchDiscoveryView: View {
     ]
 
     var body: some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: 28) {
-                recommendationSection
+        VStack(alignment: .leading, spacing: 28) {
+            recommendationSection
 
-                VStack(alignment: .leading, spacing: 14) {
-                    Text("ui.search.browse_categories")
-                        .font(.title2.bold())
+            VStack(alignment: .leading, spacing: 14) {
+                Text("ui.search.browse_categories")
+                    .font(.title2.bold())
 
-                    LazyVGrid(columns: columns, spacing: 12) {
-                        ForEach(visibleCategories) { category in
-                            NavigationLink(value: category.route) {
-                                SearchCategoryCard(category: category)
-                            }
-                            .buttonStyle(.plain)
+                LazyVGrid(columns: columns, spacing: 12) {
+                    ForEach(visibleCategories) { category in
+                        NavigationLink(value: category.route) {
+                            SearchCategoryCard(category: category)
                         }
+                        .buttonStyle(.plain)
                     }
                 }
-                .padding(.horizontal)
             }
-            .padding(.vertical, 8)
+            .padding(.horizontal)
         }
-        .refreshable {
-            await loadRecommendations()
-        }
-        .task(id: reloadToken) {
-            guard recommendations.isEmpty else { return }
-            await loadRecommendations()
-        }
+        .padding(.vertical, 8)
     }
 
     private var visibleCategories: [SearchMusicCategory] {
@@ -95,21 +85,9 @@ struct SearchDiscoveryView: View {
                 Text(message)
             } actions: {
                 Button("ui.common.retry") {
-                    reloadToken += 1
+                    onRetry()
                 }
             }
-        }
-    }
-
-    private func loadRecommendations() async {
-        phase = .loading
-        do {
-            recommendations = try await api.recommendedPlaylists(limit: 10)
-            phase = .loaded
-        } catch is CancellationError {
-            return
-        } catch {
-            phase = .failed(error.localizedDescription)
         }
     }
 }

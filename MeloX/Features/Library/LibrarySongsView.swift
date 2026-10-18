@@ -50,6 +50,7 @@ struct LibrarySongsView: View {
                     TrackRowView(song: song, showsArtwork: true)
                 }
                 .buttonStyle(.plain)
+                .compactSongListRow()
                 .swipeActions(edge: .trailing) {
                     Button(role: .destructive) {
                         library.toggle(song: song)
