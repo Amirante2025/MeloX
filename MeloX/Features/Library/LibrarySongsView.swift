@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct LibrarySongsView: View {
+    @Environment(\.scrollingPageHeader) private var pageHeader
     let searchQuery: String
 
     @Environment(LibraryStore.self) private var library
@@ -15,6 +16,10 @@ struct LibrarySongsView: View {
 
     var body: some View {
         List {
+            if pageHeader != nil {
+                ScrollingPageListHeader()
+            }
+
             if !displayedSongs.isEmpty {
                 Button(action: playDisplayedSongs) {
                     HStack {

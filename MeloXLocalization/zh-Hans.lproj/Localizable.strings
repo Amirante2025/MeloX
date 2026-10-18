@@ -343,7 +343,7 @@
 "ui.settings.catalog.interface.section" = "界面与应用";
 "ui.settings.catalog.tab_layout.title" = "页面与标签栏";
 "ui.settings.catalog.tab_layout.subtitle" = "显示或隐藏页面，调整首页、标签栏与音乐库布局";
-"ui.settings.catalog.tab_layout.keywords" = "首页|TabView|标签栏|排序|推荐|播客|云盘|歌曲|歌单|历史|显示|隐藏|开关";
+"ui.settings.catalog.tab_layout.keywords" = "首页|TabView|标签栏|推荐|播客|云盘|歌曲|歌单|历史|显示|隐藏|开关";
 "ui.settings.catalog.download.keyword" = "下载";
 "ui.settings.catalog.general.title" = "通用";
 "ui.settings.catalog.general.subtitle" = "主题、启动页面、剪贴板链接与音乐库记忆";
@@ -2132,11 +2132,3 @@
 "ui.library.artists.search" = "搜索已关注的歌手";
 "ui.library.artists.empty" = "暂无已关注的歌手";
 "ui.library.error.favorite_artists" = "歌手列表加载失败：%@";
-
-"ui.settings.home_order.title" = "首页推荐排序";
-"ui.settings.home_order.quick_actions" = "快捷卡片";
-"ui.settings.home_order.quick_actions.footer" = "拖动右侧手柄调整每日推荐等卡片的先后顺序，修改立即生效并自动保存。";
-"ui.settings.home_order.sections" = "推荐内容区块";
-"ui.settings.home_order.sections.footer" = "拖动调整首页推荐区块的顺序。暂无内容或已关闭的功能不会显示；再次可用时保留此处顺序。";
-"ui.settings.home_order.reset" = "恢复默认推荐顺序";
-"ui.settings.home_order.keywords" = "首页 推荐 顺序 排序 拖动 每日推荐 快捷卡片 推荐歌单 热播 排行榜";

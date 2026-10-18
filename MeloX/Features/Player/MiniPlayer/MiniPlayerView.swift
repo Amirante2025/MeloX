@@ -14,7 +14,7 @@ struct MiniPlayerView: View {
             HStack(spacing: isInline ? 8 : 10) {
                 Button(action: onExpand) {
                     HStack(spacing: isInline ? 8 : 10) {
-                        ArtworkImage(url: song.album?.artworkURL, cornerRadius: 6)
+                        ArtworkImage(url: song.album?.artworkURL, cornerRadius: 5)
                             .frame(width: artworkSize, height: artworkSize)
                             .matchedTransitionSource(
                                 id: artworkTransitionID,
@@ -106,7 +106,7 @@ struct MiniPlayerView: View {
     }
 
     private var artworkSize: CGFloat {
-        isInline ? 30 : 40
+        30
     }
 
     private var trackSwipeGesture: some Gesture {

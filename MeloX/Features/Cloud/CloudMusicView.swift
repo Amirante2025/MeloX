@@ -2,6 +2,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct CloudMusicView: View {
+    @Environment(\.scrollingPageHeader) private var pageHeader
     let searchQuery: String
 
     @Environment(CloudMusicStore.self) private var cloud
@@ -17,22 +18,10 @@ struct CloudMusicView: View {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showsFileImporter = true
-                    } label: {
-                        if cloud.isUploading {
-                            ProgressView()
-                        } else {
-                            Label("ui.cloud.upload_music", systemImage: "square.and.arrow.up")
-                        }
+                if pageHeader == nil {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        uploadButton
                     }
-                    .disabled(cloud.isUploading)
-                    .accessibilityLabel(
-                        cloud.isUploading
-                            ? L10n.string("ui.cloud.uploading_music")
-                            : L10n.string("ui.cloud.upload_music")
-                    )
                 }
             }
             .fileImporter(
@@ -89,14 +78,48 @@ struct CloudMusicView: View {
             }
     }
 
+    private var uploadButton: some View {
+        Button {
+            showsFileImporter = true
+        } label: {
+            if cloud.isUploading {
+                ProgressView()
+            } else {
+                Label("ui.cloud.upload_music", systemImage: "square.and.arrow.up")
+            }
+        }
+        .disabled(cloud.isUploading)
+        .accessibilityLabel(
+            cloud.isUploading
+                ? L10n.string("ui.cloud.uploading_music")
+                : L10n.string("ui.cloud.upload_music")
+        )
+    }
+
+    private func placeholder<Content: View>(
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                ScrollingPageHeader()
+                if pageHeader != nil {
+                    uploadButton
+                }
+                content().frame(minHeight: 320)
+            }
+        }
+    }
+
     @ViewBuilder
     private var content: some View {
         switch cloud.phase {
         case .loading where cloud.items.isEmpty:
-            ProgressView("ui.cloud.loading")
+            placeholder { ProgressView("ui.cloud.loading") }
         case .failed(let message) where cloud.items.isEmpty:
-            ConnectionUnavailableView(message: message) {
-                Task { await cloud.refresh(force: true) }
+            placeholder {
+                ConnectionUnavailableView(message: message) {
+                    Task { await cloud.refresh(force: true) }
+                }
             }
         default:
             cloudList
@@ -105,6 +128,10 @@ struct CloudMusicView: View {
 
     private var cloudList: some View {
         List {
+            if pageHeader != nil {
+                ScrollingPageListHeader()
+                uploadButton
+            }
             if cloud.isUploading {
                 HStack(spacing: 12) {
                     ProgressView()

@@ -343,7 +343,7 @@
 "ui.settings.catalog.interface.section" = "Interface & App";
 "ui.settings.catalog.tab_layout.title" = "Pages & Tab Bar";
 "ui.settings.catalog.tab_layout.subtitle" = "Show or hide pages and arrange Home, the tab bar, and Library";
-"ui.settings.catalog.tab_layout.keywords" = "Home|TabView|tab bar|order|For You|podcasts|cloud|songs|playlists|history|show|hide|visibility|toggle";
+"ui.settings.catalog.tab_layout.keywords" = "Home|TabView|tab bar|For You|podcasts|cloud|songs|playlists|history|show|hide|visibility|toggle";
 "ui.settings.catalog.download.keyword" = "downloads";
 "ui.settings.catalog.general.title" = "General";
 "ui.settings.catalog.general.subtitle" = "Theme, launch page, clipboard links, and Library memory";
@@ -2132,11 +2132,3 @@
 "ui.library.artists.search" = "Search followed artists";
 "ui.library.artists.empty" = "No Followed Artists";
 "ui.library.error.favorite_artists" = "Could not load followed artists: %@";
-
-"ui.settings.home_order.title" = "Home Recommendation Order";
-"ui.settings.home_order.quick_actions" = "Quick Action Cards";
-"ui.settings.home_order.quick_actions.footer" = "Drag the handles to reorder cards such as Daily Recommendations. Changes take effect immediately and are saved automatically.";
-"ui.settings.home_order.sections" = "Recommendation Sections";
-"ui.settings.home_order.sections.footer" = "Drag to reorder Home recommendations. Empty sections and disabled features stay hidden and keep their saved position when they become available again.";
-"ui.settings.home_order.reset" = "Restore Default Recommendation Order";
-"ui.settings.home_order.keywords" = "home recommendations order reorder drag daily cards playlists trending charts";

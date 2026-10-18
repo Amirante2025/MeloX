@@ -243,6 +243,8 @@ extension View {
     func musicDestinations(in namespace: Namespace.ID) -> some View {
         navigationDestination(for: MusicRoute.self) { route in
             MusicRouteDestination(route: route)
+                .environment(\.scrollingPageHeader, nil)
+                .toolbar(.visible, for: .navigationBar)
                 .musicNavigationTransition(for: route, in: namespace)
         }
     }

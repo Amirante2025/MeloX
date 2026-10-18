@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct LibraryArtistsView: View {
+    @Environment(\.scrollingPageHeader) private var pageHeader
     @Environment(LibraryStore.self) private var library
     let searchQuery: String
 
@@ -10,16 +11,21 @@ struct LibraryArtistsView: View {
             query.isEmpty || ([$0.name] + $0.aliases).contains { $0.localizedCaseInsensitiveContains(query) }
         }
 
-        List(artists) { artist in
-            NavigationLink(value: MusicRoute.artist(artist.id)) {
-                HStack(spacing: 12) {
-                    ArtworkImage(url: artist.artworkURL, cornerRadius: 1_000)
-                        .frame(width: 54, height: 54)
-                    Text(artist.name)
-                        .lineLimit(1)
-                }
+        List {
+            if pageHeader != nil {
+                ScrollingPageListHeader()
             }
-            .musicMatchedTransitionSource(for: .artist(artist.id))
+            ForEach(artists) { artist in
+                NavigationLink(value: MusicRoute.artist(artist.id)) {
+                    HStack(spacing: 12) {
+                        ArtworkImage(url: artist.artworkURL, cornerRadius: 1_000)
+                            .frame(width: 54, height: 54)
+                        Text(artist.name)
+                            .lineLimit(1)
+                    }
+                }
+                .musicMatchedTransitionSource(for: .artist(artist.id))
+            }
         }
         .listStyle(.plain)
         .refreshable { await library.refresh(force: true) }

@@ -74,3 +74,16 @@ if [[ "$LAUNCH_RESULT" =~ :[[:space:]]([0-9]+) ]]; then
   /usr/bin/sample "${BASH_REMATCH[1]}" 1 1 \
     -file "$PREVIEW/Music-process-sample.txt" || true
 fi
+
+xcrun simctl terminate "$DEVICE_ID" "$BUNDLE_ID" || true
+xcrun simctl launch "$DEVICE_ID" "$BUNDLE_ID" \
+  -melox.hasCompletedOnboarding YES \
+  -melox.localization.language simplifiedChinese \
+  -appReleaseNotes.lastPresentedVersion 99.0.0 \
+  -appRecommendation.hasPresentedPrompt YES \
+  -checksUpdatesOnLaunch NO \
+  -melox.contentFeatures.showsPrivateMessagesButton NO \
+  -melox.contentFeatures.showsSongRecognitionButton NO \
+  --preview-scrolled
+sleep 30
+xcrun simctl io "$DEVICE_ID" screenshot "$PREVIEW/Music-home-scrolled.png"

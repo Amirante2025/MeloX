@@ -4,6 +4,7 @@ struct LibraryView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(LibraryStore.self) private var library
     @Environment(AppSettings.self) private var settings
+    @Environment(\.scrollingPageHeader) private var pageHeader
 
     private let fixedPage: LibraryPage?
     private let showsNavigationTitle: Bool
@@ -31,7 +32,8 @@ struct LibraryView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if !showsNavigationTitle, fixedPage == nil, availablePages.count > 1 {
+            if pageHeader == nil, !showsNavigationTitle,
+               fixedPage == nil, availablePages.count > 1 {
                 Group {
                     if availablePages.count > 4, horizontalSizeClass == .compact {
                         pagePicker.pickerStyle(.menu)
@@ -45,15 +47,17 @@ struct LibraryView: View {
             }
 
             if availablePages.isEmpty {
-                ContentUnavailableView(
-                    "ui.library.pages_separated.title",
-                    systemImage: "rectangle.3.group",
-                    description: Text("ui.library.pages_separated.message")
-                )
+                placeholder {
+                    ContentUnavailableView(
+                        "ui.library.pages_separated.title",
+                        systemImage: "rectangle.3.group",
+                        description: Text("ui.library.pages_separated.message")
+                    )
+                }
             } else if section == .downloads {
                 LibraryDownloadsView(searchQuery: searchQuery)
             } else if !library.isLoggedIn {
-                loginUnavailableView
+                placeholder { loginUnavailableView }
             } else if section == .cloud {
                 CloudMusicView(searchQuery: searchQuery)
             } else {
@@ -61,18 +65,20 @@ struct LibraryView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .environment(\.scrollingPageHeader, libraryHeader)
         .libraryNavigationTitle(
             fixedPage.map { AppTab(libraryPage: $0).title }
                 ?? L10n.string("ui.navigation.library"),
-            isPresented: showsNavigationTitle
+            isPresented: showsNavigationTitle && pageHeader == nil
         )
         .librarySearchable(
             text: $searchQuery,
             prompt: searchPrompt,
-            isEnabled: canSearchCurrentPage
+            isEnabled: canSearchCurrentPage && pageHeader == nil
         )
         .toolbar {
-            if showsNavigationTitle, fixedPage == nil, availablePages.count > 1 {
+            if pageHeader == nil, showsNavigationTitle,
+               fixedPage == nil, availablePages.count > 1 {
                 ToolbarTitleMenu {
                     pagePicker.pickerStyle(.inline)
                 }
@@ -134,6 +140,61 @@ struct LibraryView: View {
         }
     }
 
+    private var libraryHeader: AnyView? {
+        guard let pageHeader else { return nil }
+        return AnyView(
+            VStack(spacing: 12) {
+                pageHeader
+                if fixedPage == nil, availablePages.count > 1 {
+                    if availablePages.count > 4 {
+                        pagePicker.pickerStyle(.menu)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    } else {
+                        pagePicker.pickerStyle(.segmented)
+                    }
+                }
+                if canSearchCurrentPage {
+                    librarySearchField
+                }
+            }
+        )
+    }
+
+    private var librarySearchField: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(.secondary)
+            TextField(searchPrompt, text: $searchQuery)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .submitLabel(.search)
+                .accessibilityIdentifier("library-search")
+            if !searchQuery.isEmpty {
+                Button {
+                    searchQuery = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("ui.common.clear")
+            }
+        }
+        .padding(12)
+        .background(.quaternary, in: .rect(cornerRadius: 12))
+    }
+
+    private func placeholder<Content: View>(
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                ScrollingPageHeader()
+                content().frame(minHeight: 320)
+            }
+        }
+    }
+
     private var pagePicker: some View {
         Picker("ui.library.category_picker", selection: $section) {
             ForEach(availablePages) { item in
@@ -163,10 +224,12 @@ struct LibraryView: View {
     private var libraryContent: some View {
         switch library.phase {
         case .loading where library.profile == nil:
-            ProgressView("ui.library.loading")
+            placeholder { ProgressView("ui.library.loading") }
         case .failed(let message) where library.profile == nil:
-            ConnectionUnavailableView(message: message) {
-                Task { await library.refresh(force: true) }
+            placeholder {
+                ConnectionUnavailableView(message: message) {
+                    Task { await library.refresh(force: true) }
+                }
             }
         default:
             switch section {

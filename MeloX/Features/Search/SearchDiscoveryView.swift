@@ -16,6 +16,8 @@ struct SearchDiscoveryView: View {
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 28) {
+                ScrollingPageHeader()
+
                 recommendationSection
 
                 VStack(alignment: .leading, spacing: 14) {

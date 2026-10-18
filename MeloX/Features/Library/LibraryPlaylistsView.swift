@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct LibraryPlaylistsView: View {
+    @Environment(\.scrollingPageHeader) private var pageHeader
     let searchQuery: String
 
     @Environment(LibraryStore.self) private var library
@@ -13,10 +14,20 @@ struct LibraryPlaylistsView: View {
 
     var body: some View {
         List {
+            if pageHeader != nil {
+                ScrollingPageListHeader()
+                Button("ui.playlists.create.title", systemImage: "plus") {
+                    showsCreation = true
+                }
+                .disabled(!library.isLoggedIn)
+            }
+
             if !isSearching, let userID = library.profile?.id {
                 Section("ui.library.section.mine") {
                     NavigationLink {
                         UserListeningRankView(userID: userID)
+                            .environment(\.scrollingPageHeader, nil)
+                            .toolbar(.visible, for: .navigationBar)
                     } label: {
                         Label(
                             "ui.library.my_listening_rank",
@@ -86,9 +97,11 @@ struct LibraryPlaylistsView: View {
         }
 
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("ui.playlists.create.title", systemImage: "plus") { showsCreation = true }
-                    .disabled(!library.isLoggedIn)
+            if pageHeader == nil {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("ui.playlists.create.title", systemImage: "plus") { showsCreation = true }
+                        .disabled(!library.isLoggedIn)
+                }
             }
         }
         .sheet(isPresented: $showsCreation) {

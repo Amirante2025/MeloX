@@ -3,6 +3,7 @@ import SwiftUI
 struct PodcastHomeView: View {
     @Environment(NeteaseAPI.self) private var api
     @Environment(LibraryStore.self) private var library
+    @Environment(\.scrollingPageHeader) private var pageHeader
 
     let showsNavigationTitle: Bool
 
@@ -22,7 +23,7 @@ struct PodcastHomeView: View {
 
     @ViewBuilder
     var body: some View {
-        if showsNavigationTitle {
+        if showsNavigationTitle, pageHeader == nil {
             pageContent
                 .navigationTitle("ui.navigation.podcasts")
                 .toolbarTitleDisplayMode(.inlineLarge)
@@ -36,7 +37,12 @@ struct PodcastHomeView: View {
             if hasLoadedContent {
                 content
             } else {
-                initialState
+                ScrollView {
+                    VStack(spacing: 24) {
+                        ScrollingPageHeader()
+                        initialState.frame(minHeight: 320)
+                    }
+                }
             }
         }
         .task(
@@ -79,6 +85,8 @@ struct PodcastHomeView: View {
     private var content: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 32) {
+                ScrollingPageHeader()
+
                 if !subscriptions.isEmpty {
                     podcastStrip(
                         title: L10n.string("ui.podcasts.my_subscriptions"),

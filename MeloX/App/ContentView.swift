@@ -62,6 +62,9 @@ struct ContentView: View {
 
     private var mainExperience: some View {
         playerAwareTabView
+            .overlay(alignment: .top) {
+                StatusBarBackdrop()
+            }
             .environment(
                 \.openMusicRoute,
                 OpenMusicRouteAction(action: openMusicRoute)
@@ -367,18 +370,20 @@ struct ContentView: View {
                 Tab(
                     tab.title,
                     systemImage: tab.systemImage,
-                    value: tab,
-                    role: tab == .search ? .search : nil
+                    value: tab
                 ) {
                     NavigationStack(
                         path: navigationPathBinding(for: tab)
                     ) {
                         tabRoot(for: tab)
-                            .toolbarTitleDisplayMode(.inlineLarge)
-                            .background {
-                                NavigationBarScrollBehavior()
-                                    .frame(width: 0, height: 0)
-                            }
+                            .environment(
+                                \.scrollingPageHeader,
+                                AnyView(pageHeader(for: tab))
+                            )
+                            .toolbar(
+                                tab == .search ? .visible : .hidden,
+                                for: .navigationBar
+                            )
                             .toolbarBackground(
                                 .ultraThinMaterial,
                                 for: .navigationBar
@@ -387,13 +392,12 @@ struct ContentView: View {
                                 .automatic,
                                 for: .navigationBar
                             )
-                            .toolbar {
-                                primaryToolbar(for: tab)
-                            }
                             .navigationDestination(
                                 for: ContentRoute.self
                             ) { route in
                                 contentDestination(for: route)
+                                    .environment(\.scrollingPageHeader, nil)
+                                    .toolbar(.visible, for: .navigationBar)
                             }
                             .musicDestinations(
                                 in: musicNavigationNamespace
@@ -413,8 +417,6 @@ struct ContentView: View {
             HomeView()
         case .recommended:
             HomeRecommendedView()
-                .navigationTitle("ui.navigation.recommended")
-                .toolbarTitleDisplayMode(.inlineLarge)
         case .music:
             ExploreView(navigationTitle: L10n.string("ui.navigation.music"))
         case .podcasts:
@@ -439,11 +441,23 @@ struct ContentView: View {
         }
     }
 
-    @ToolbarContentBuilder
-    private func primaryToolbar(
-        for tab: AppTab
-    ) -> some ToolbarContent {
-        ToolbarItemGroup(placement: .topBarTrailing) {
+    private func pageHeader(for tab: AppTab) -> some View {
+        HStack(alignment: .center, spacing: 16) {
+            Text(tab.title)
+                .font(.largeTitle.bold())
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .accessibilityAddTraits(.isHeader)
+
+            Spacer(minLength: 12)
+
+            primaryActions(for: tab)
+        }
+        .accessibilityIdentifier("page-header-\(tab.rawValue)")
+    }
+
+    private func primaryActions(for tab: AppTab) -> some View {
+        HStack(spacing: 10) {
             if library.isLoggedIn
                 && settings.contentFeatures.showsPrivateMessagesButton {
                 Button {
@@ -453,6 +467,7 @@ struct ContentView: View {
                         systemName:
                             "bubble.left.and.bubble.right"
                     )
+                    .frame(width: 28, height: 28)
                 }
                 .accessibilityLabel("ui.messages.private.title")
                 .accessibilityHint("ui.messages.private.open_hint")
@@ -463,6 +478,7 @@ struct ContentView: View {
                     navigate(to: .songRecognition, in: tab)
                 } label: {
                     Image(systemName: "waveform")
+                        .frame(width: 28, height: 28)
                 }
                 .accessibilityLabel("ui.recognition.title")
             }
@@ -471,9 +487,13 @@ struct ContentView: View {
                 presentedSheet = .settings
             } label: {
                 accountToolbarLabel
+                    .frame(width: 28, height: 28)
             }
             .accessibilityLabel(accountToolbarAccessibilityLabel)
         }
+        .font(.title3)
+        .buttonStyle(.glass)
+        .buttonBorderShape(.circle)
     }
 
     @ViewBuilder

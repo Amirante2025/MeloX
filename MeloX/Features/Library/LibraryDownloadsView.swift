@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct LibraryDownloadsView: View {
+    @Environment(\.scrollingPageHeader) private var pageHeader
     let searchQuery: String
 
     @Environment(DownloadStore.self) private var downloads
@@ -8,9 +9,15 @@ struct LibraryDownloadsView: View {
 
     var body: some View {
         List {
+            if pageHeader != nil {
+                ScrollingPageListHeader()
+            }
+
             if !isSearching {
                 NavigationLink {
                     DownloadsView()
+                        .environment(\.scrollingPageHeader, nil)
+                        .toolbar(.visible, for: .navigationBar)
                 } label: {
                     HStack {
                         Label("ui.downloads.management", systemImage: "arrow.down.circle")

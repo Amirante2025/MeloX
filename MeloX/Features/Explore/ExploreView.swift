@@ -3,6 +3,7 @@ import SwiftUI
 struct ExploreView: View {
     @Environment(NeteaseAPI.self) private var api
     @Environment(AppSettings.self) private var settings
+    @Environment(\.scrollingPageHeader) private var pageHeader
 
     let showsNavigationTitle: Bool
     let navigationTitle: String
@@ -32,7 +33,7 @@ struct ExploreView: View {
 
     @ViewBuilder
     var body: some View {
-        if showsNavigationTitle {
+        if showsNavigationTitle, pageHeader == nil {
             content
                 .navigationTitle(navigationTitle)
         } else {
@@ -43,6 +44,8 @@ struct ExploreView: View {
     private var content: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 26) {
+                ScrollingPageHeader(horizontalPadding: 0)
+
                 ExploreCategoryPicker(
                     categories: categories,
                     selection: category,

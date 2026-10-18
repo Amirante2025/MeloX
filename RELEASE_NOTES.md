@@ -4,13 +4,13 @@
 
 ### 简体中文
 
-- 标题与右侧头像同排对齐，并随原生大标题一起滚动收起
-- 首页推荐支持快捷卡片和内容区块的独立拖动排序，自动保存顺序
+- 迷你播放器封面缩小至 30pt，搜索与其他标签整合在同一个系统胶囊导航条内
+- 标题与右侧头像同排放在页面内容顶部，随内容自然滚动
+- 状态栏后方增加系统材质的渐变模糊，提高时间、信号和电量文字的可视度
 - 播放页在更多按钮左侧显示星标收藏按钮，可直接收藏或取消收藏歌曲
 - 应用显示名称改为 Music，并使用自定义音乐图标
 - 增加了音乐库搜索框的独立显示开关，关闭时清除当前搜索筛选
 - 增加了“页面与标签栏”中各页面的独立显示开关，支持隐藏首页、搜索、推荐及音乐库各项，并保留原有布局
-- 首页等主页面采用原生大标题和滚动收起效果，滚动时显示半透明毛玻璃导航栏
 - 移除了 iOS 安装包中的 Apple Watch App 和手机端手表同步服务，避免重签后的手表关联标识不匹配导致安装失败
 - 增加了私信和听歌识曲工具栏按钮的独立显示开关，可在“设置 → 功能模块”中调整
 - 增加了歌手关注与取消关注，以及可搜索的已关注歌手音乐库页面
@@ -30,13 +30,13 @@
 
 ### English
 
-- Aligned native large titles and profile actions so they collapse together while scrolling
-- Added persistent drag-to-reorder controls for Home recommendation cards and content sections
+- Reduced mini-player artwork to 30pt and joined Search with the other tabs in one native capsule
+- Placed large page titles and profile actions in the scrolling content so they move offscreen together
+- Added a fading system-material backdrop behind the status bar to improve text and indicator visibility
 - Added a Favorite star to the left of More in Now Playing to favorite or unfavorite the current song
 - Renamed the app to Music and applied the supplied custom music icon
 - Added an independent Library search visibility switch that clears the current filter when hidden
 - Added independent visibility switches in Pages & Tab Bar for Home, Search, Recommended, and every Library page while preserving their layout
-- Updated primary pages with native large titles that collapse on scroll and translucent navigation bar backgrounds
 - Removed the embedded Apple Watch app and phone-to-watch sync service to avoid companion bundle identifier mismatches after re-signing the iOS package
 - Added independent visibility toggles for the Private Messages and Song Recognition toolbar buttons in Settings → Feature Modules
 - Added artist follow controls and a searchable Followed Artists library page

@@ -30,11 +30,13 @@ struct HomeRecommendedView: View {
         )
     }
 
-    private var orderedSections: [HomeRecommendationSection] {
-        let sections = Dictionary(
-            uniqueKeysWithValues: feed.sections.map { ($0.slot, $0) }
-        )
-        return settings.homeRecommendations.sectionOrder.compactMap { sections[$0] }
+    private var initialScrollAnchor: UnitPoint {
+        #if DEBUG && targetEnvironment(simulator)
+        if ProcessInfo.processInfo.arguments.contains("--preview-scrolled") {
+            return .center
+        }
+        #endif
+        return .top
     }
 
     var body: some View {
@@ -104,6 +106,8 @@ struct HomeRecommendedView: View {
     private var content: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 32) {
+                ScrollingPageHeader()
+
                 HomeQuickActionsView(
                     activeAction: activeAction,
                     perform: perform
@@ -117,7 +121,7 @@ struct HomeRecommendedView: View {
                         )
                         .padding(.horizontal)
                 } else {
-                    ForEach(orderedSections) { section in
+                    ForEach(feed.sections) { section in
                         HomeRecommendationSectionView(
                             section: section
                         )
@@ -144,6 +148,7 @@ struct HomeRecommendedView: View {
             .padding(.top, 8)
             .padding(.bottom, 28)
         }
+        .defaultScrollAnchor(initialScrollAnchor)
         .refreshable {
             await load(refresh: true)
         }

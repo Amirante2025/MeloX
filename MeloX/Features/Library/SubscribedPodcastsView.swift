@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SubscribedPodcastsView: View {
+    @Environment(\.scrollingPageHeader) private var pageHeader
     let searchQuery: String
 
     @Environment(LibraryStore.self) private var library
@@ -10,6 +11,10 @@ struct SubscribedPodcastsView: View {
 
     var body: some View {
         List {
+            if pageHeader != nil {
+                ScrollingPageListHeader()
+            }
+
             if !displayedPodcasts.isEmpty {
                 Text(
                     isSearching

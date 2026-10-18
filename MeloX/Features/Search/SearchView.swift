@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SearchView: View {
+    @Environment(\.scrollingPageHeader) private var pageHeader
     @Environment(NeteaseAPI.self) private var api
     @Environment(PlayerStore.self) private var player
     @Environment(LibraryStore.self) private var library
@@ -32,7 +33,8 @@ struct SearchView: View {
                 searchResults
             }
         }
-        .navigationTitle("ui.navigation.search")
+        .navigationTitle(pageHeader == nil ? L10n.string("ui.navigation.search") : "")
+        .navigationBarTitleDisplayMode(.inline)
         .searchable(
             text: $query,
             placement: .navigationBarDrawer(displayMode: .always),
@@ -134,6 +136,9 @@ struct SearchView: View {
 
     private var searchResults: some View {
         List {
+            if pageHeader != nil {
+                ScrollingPageListHeader()
+            }
             if phase == .loading {
                 HStack {
                     Spacer()
@@ -219,6 +224,9 @@ struct SearchView: View {
         switch link {
         case .song:
             List {
+                if pageHeader != nil {
+                    ScrollingPageListHeader()
+                }
                 if phase == .loading {
                     HStack {
                         Spacer()
@@ -244,15 +252,20 @@ struct SearchView: View {
             .listStyle(.plain)
 
         case .listenTogether(let invitation):
-            ContentUnavailableView {
-                Label("ui.listen_together.invitation", systemImage: "person.2.wave.2")
-            } description: {
-                Text("ui.search.listen_together_link_recognized")
-            } actions: {
-                Button("ui.clipboard.view_invitation") {
-                    presentedListenTogetherLink = invitation
+            ScrollView {
+                VStack(spacing: 24) {
+                    ScrollingPageHeader()
+                    ContentUnavailableView {
+                        Label("ui.listen_together.invitation", systemImage: "person.2.wave.2")
+                    } description: {
+                        Text("ui.search.listen_together_link_recognized")
+                    } actions: {
+                        Button("ui.clipboard.view_invitation") {
+                            presentedListenTogetherLink = invitation
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
                 }
-                .buttonStyle(.borderedProminent)
             }
         }
     }

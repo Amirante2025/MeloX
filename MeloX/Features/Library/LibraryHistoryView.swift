@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct LibraryHistoryView: View {
+    @Environment(\.scrollingPageHeader) private var pageHeader
     let searchQuery: String
 
     @Environment(LibraryStore.self) private var library
@@ -8,6 +9,10 @@ struct LibraryHistoryView: View {
 
     var body: some View {
         List {
+            if pageHeader != nil {
+                ScrollingPageListHeader()
+            }
+
             if !displayedSongs.isEmpty {
                 Button {
                     Task { await player.playAll(displayedSongs) }

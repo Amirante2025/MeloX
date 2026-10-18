@@ -2,6 +2,7 @@ import SwiftUI
 
 struct HomeView: View {
     @Environment(AppSettings.self) private var settings
+    @Environment(\.scrollingPageHeader) private var pageHeader
 
     @State private var section = AppTab.recommended
 
@@ -28,27 +29,35 @@ struct HomeView: View {
                 sectionContent(for: activeSection)
             } else {
                 ScrollView {
-                    ContentUnavailableView(
-                        "ui.home.no_visible_pages.title",
-                        systemImage: "rectangle.3.group",
-                        description: Text("ui.home.no_visible_pages.message")
-                    )
-                    .padding(.top, 40)
+                    VStack(spacing: 24) {
+                        ScrollingPageHeader()
+                        ContentUnavailableView(
+                            "ui.home.no_visible_pages.title",
+                            systemImage: "rectangle.3.group",
+                            description: Text("ui.home.no_visible_pages.message")
+                        )
+                    }
                 }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .safeAreaInset(edge: .top, spacing: 0) {
-            if availableSections.count > 1 {
-                sectionPicker
-            }
-        }
-        .navigationTitle("ui.navigation.home")
-        .toolbarTitleDisplayMode(.inlineLarge)
+        .environment(\.scrollingPageHeader, homeHeader)
         .onChange(of: availableSections) { _, sections in
             guard !sections.contains(section) else { return }
             section = sections.first ?? .recommended
         }
+    }
+
+    private var homeHeader: AnyView? {
+        guard let pageHeader else { return nil }
+        return AnyView(
+            VStack(spacing: 8) {
+                pageHeader
+                if availableSections.count > 1 {
+                    sectionPicker
+                }
+            }
+        )
     }
 
     @ViewBuilder
@@ -61,9 +70,7 @@ struct HomeView: View {
                 }
             }
             .pickerStyle(.segmented)
-            .padding(.horizontal, 16)
             .padding(.vertical, 8)
-            .background(.ultraThinMaterial)
         } else {
             Picker("ui.home.section_picker", selection: sectionSelection) {
                 ForEach(availableSections) { section in
@@ -75,10 +82,8 @@ struct HomeView: View {
                 }
             }
             .pickerStyle(.menu)
-            .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.ultraThinMaterial)
         }
     }
 

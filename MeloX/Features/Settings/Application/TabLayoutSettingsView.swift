@@ -18,12 +18,6 @@ struct TabLayoutSettingsView: View {
 
             Section {
                 visibilityToggle(for: .recommended)
-
-                NavigationLink {
-                    HomeRecommendationOrderSettingsView()
-                } label: {
-                    Label("ui.settings.home_order.title", systemImage: "list.number")
-                }
             } header: {
                 Text("ui.navigation.recommended")
             } footer: {
@@ -59,53 +53,6 @@ struct TabLayoutSettingsView: View {
             }
 
             Section {
-                ForEach(settings.homeTabs) { tab in
-                    orderRow(
-                        for: tab,
-                        trailingText:
-                            tab == .recommended
-                                ? L10n.string("ui.common.fixed")
-                                : nil
-                    )
-                    .moveDisabled(tab == .recommended)
-                }
-                .onMove { source, destination in
-                    var tabs = settings.homeTabs
-                    tabs.move(
-                        fromOffsets: source,
-                        toOffset: destination
-                    )
-                    settings.setHomeTabOrder(tabs)
-                }
-            } header: {
-                Text("ui.settings.tab_layout.section.home_order")
-            } footer: {
-                Text("ui.settings.tab_layout.home_order.footer")
-            }
-
-            Section {
-                ForEach(settings.visibleTabs) { tab in
-                    orderRow(
-                        for: tab,
-                        trailingText: fixedTabDescription(for: tab)
-                    )
-                    .moveDisabled(tab == .home || tab == .search)
-                }
-                .onMove { source, destination in
-                    var tabs = settings.visibleTabs
-                    tabs.move(
-                        fromOffsets: source,
-                        toOffset: destination
-                    )
-                    settings.setVisibleTabOrder(tabs)
-                }
-            } header: {
-                Text("ui.settings.tab_layout.section.tab_order")
-            } footer: {
-                Text("ui.settings.tab_layout.tab_order.footer")
-            }
-
-            Section {
                 Button(
                     "ui.settings.tab_layout.reset",
                     systemImage: "arrow.counterclockwise",
@@ -118,9 +65,6 @@ struct TabLayoutSettingsView: View {
         .listStyle(.insetGrouped)
         .navigationTitle("ui.settings.tab_layout.title")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            EditButton()
-        }
         .confirmationDialog(
             "ui.settings.tab_layout.reset.confirmation",
             isPresented: $showsResetConfirmation,
@@ -173,36 +117,5 @@ struct TabLayoutSettingsView: View {
             !settings.isPageHidden(tab) && !settings.canHidePage(tab)
         )
         .accessibilityIdentifier("page-visibility-\(tab.rawValue)")
-    }
-
-    private func orderRow(
-        for tab: AppTab,
-        trailingText: String?
-    ) -> some View {
-        HStack(spacing: 12) {
-            Label(tab.settingsTitle, systemImage: tab.systemImage)
-
-            Spacer(minLength: 8)
-
-            if let trailingText {
-                Text(trailingText)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .contentShape(.rect)
-    }
-
-    private func fixedTabDescription(
-        for tab: AppTab
-    ) -> String? {
-        switch tab {
-        case .home:
-            L10n.string("ui.settings.tab_layout.fixed_entry")
-        case .search:
-            L10n.string("ui.settings.tab_layout.system_fixed")
-        default:
-            nil
-        }
     }
 }
