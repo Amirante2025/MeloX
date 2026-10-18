@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		A1D0AD000000000000000001 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = A1D0AD000000000000000003 /* GRDB */; };
-		B1000000000000000000000B /* MeloX Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = B10000000000000000000002 /* MeloX Watch App.app */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B10000000000000000000010 /* QRCode in Frameworks */ = {isa = PBXBuildFile; productRef = B10000000000000000000012 /* QRCode */; };
 		C20000000000000000000001 /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = C20000000000000000000003 /* NukeUI */; };
 		CDCDC02B263846DD93AAF886 /* MeloXLyricsWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2572AEB5A5B04809878AE645 /* MeloXLyricsWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -25,13 +24,6 @@
 			remoteGlobalIDString = 1CC9813243AD4097A843BDAE;
 			remoteInfo = MeloXLyricsWidget;
 		};
-		B1000000000000000000000D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 6DB1D87A300F5FA000FB3AEE /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = B10000000000000000000001;
-			remoteInfo = "MeloX Watch App";
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -44,17 +36,6 @@
 				CDCDC02B263846DD93AAF886 /* MeloXLyricsWidget.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		B1000000000000000000000C /* Embed Watch Content */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
-			dstSubfolderSpec = 16;
-			files = (
-				B1000000000000000000000B /* MeloX Watch App.app in Embed Watch Content */,
-			);
-			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -246,13 +227,11 @@
 				6DB1D880300F5FA000FB3AEE /* Resources */,
 				A1D0AD000000000000000004 /* Generate Release Notes */,
 				1B6FDCCD92FB45FD9037E16A /* Embed Foundation Extensions */,
-				B1000000000000000000000C /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				B680245FE2CA46B0B69EBFF8 /* PBXTargetDependency */,
-				B1000000000000000000000E /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				6DB1D884300F5FA000FB3AEE /* MeloX */,
@@ -494,12 +473,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		B1000000000000000000000E /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			platformFilter = ios;
-			target = B10000000000000000000001 /* MeloX Watch App */;
-			targetProxy = B1000000000000000000000D /* PBXContainerItemProxy */;
-		};
 		B680245FE2CA46B0B69EBFF8 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 1CC9813243AD4097A843BDAE /* MeloXLyricsWidget */;

@@ -11,7 +11,6 @@ struct MeloXApp: App {
     @State private var cloud: CloudMusicStore
     @State private var downloads: DownloadStore
     @State private var player: PlayerStore
-    @State private var phoneWatchSync: PhoneWatchSyncService
     @State private var listenTogether: ListenTogetherStore
     @State private var lyrics: LyricsStore
     @State private var floatingLyrics: FloatingLyricsController
@@ -48,9 +47,6 @@ struct MeloXApp: App {
             api: api,
             player: player
         )
-        let phoneWatchSync = PhoneWatchSyncService(
-            settings: settings
-        )
         let lyricService = LyricsService(api: api, settings: settings)
         let lyrics = LyricsStore(service: lyricService)
         let floatingLyrics = FloatingLyricsController(
@@ -64,7 +60,6 @@ struct MeloXApp: App {
         _cloud = State(initialValue: cloud)
         _downloads = State(initialValue: downloads)
         _player = State(initialValue: player)
-        _phoneWatchSync = State(initialValue: phoneWatchSync)
         _listenTogether = State(initialValue: listenTogether)
         _lyrics = State(initialValue: lyrics)
         _floatingLyrics = State(initialValue: floatingLyrics)
@@ -104,7 +99,6 @@ struct MeloXApp: App {
                     isLowPowerModeEnabled = ProcessInfo.processInfo.isLowPowerModeEnabled
                 }
                 .task {
-                    phoneWatchSync.start()
                     await lyricsNotifications
                         .refreshAuthorizationStatus()
                 }
