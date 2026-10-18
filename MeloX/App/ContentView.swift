@@ -374,6 +374,15 @@ struct ContentView: View {
                         path: navigationPathBinding(for: tab)
                     ) {
                         tabRoot(for: tab)
+                            .navigationBarTitleDisplayMode(.large)
+                            .toolbarBackground(
+                                .ultraThinMaterial,
+                                for: .navigationBar
+                            )
+                            .toolbarBackgroundVisibility(
+                                .automatic,
+                                for: .navigationBar
+                            )
                             .toolbar {
                                 primaryToolbar(for: tab)
                             }

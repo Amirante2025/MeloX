@@ -9,20 +9,39 @@ struct HomeView: View {
         settings.homeTabs
     }
 
-    private var activeSection: AppTab {
+    private var activeSection: AppTab? {
         availableSections.contains(section)
             ? section
-            : availableSections.first ?? .recommended
+            : availableSections.first
+    }
+
+    private var sectionSelection: Binding<AppTab> {
+        Binding(
+            get: { activeSection ?? .recommended },
+            set: { section = $0 }
+        )
     }
 
     var body: some View {
-        VStack(spacing: 0) {
+        Group {
+            if let activeSection {
+                sectionContent(for: activeSection)
+            } else {
+                ScrollView {
+                    ContentUnavailableView(
+                        "ui.home.no_visible_pages.title",
+                        systemImage: "rectangle.3.group",
+                        description: Text("ui.home.no_visible_pages.message")
+                    )
+                    .padding(.top, 40)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .safeAreaInset(edge: .top, spacing: 0) {
             if availableSections.count > 1 {
                 sectionPicker
             }
-
-            sectionContent(for: activeSection)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .navigationTitle("ui.navigation.home")
         .navigationBarTitleDisplayMode(.large)
@@ -35,7 +54,7 @@ struct HomeView: View {
     @ViewBuilder
     private var sectionPicker: some View {
         if availableSections.count <= 4 {
-            Picker("ui.home.section_picker", selection: $section) {
+            Picker("ui.home.section_picker", selection: sectionSelection) {
                 ForEach(availableSections) { section in
                     Text(section.settingsTitle)
                         .tag(section)
@@ -44,9 +63,9 @@ struct HomeView: View {
             .pickerStyle(.segmented)
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
-            .background(.background)
+            .background(.ultraThinMaterial)
         } else {
-            Picker("ui.home.section_picker", selection: $section) {
+            Picker("ui.home.section_picker", selection: sectionSelection) {
                 ForEach(availableSections) { section in
                     Label(
                         section.settingsTitle,
@@ -59,7 +78,7 @@ struct HomeView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.background)
+            .background(.ultraThinMaterial)
         }
     }
 

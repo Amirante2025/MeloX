@@ -4,6 +4,8 @@
 
 ### 简体中文
 
+- 增加了“页面与标签栏”中各页面的独立显示开关，支持隐藏首页、搜索、推荐及音乐库各项，并保留原有布局
+- 首页等主页面采用原生大标题和滚动收起效果，滚动时显示半透明毛玻璃导航栏
 - 移除了 iOS 安装包中的 Apple Watch App 和手机端手表同步服务，避免重签后的手表关联标识不匹配导致安装失败
 - 增加了私信和听歌识曲工具栏按钮的独立显示开关，可在“设置 → 功能模块”中调整
 - 增加了歌手关注与取消关注，以及可搜索的已关注歌手音乐库页面
@@ -23,6 +25,8 @@
 
 ### English
 
+- Added independent visibility switches in Pages & Tab Bar for Home, Search, Recommended, and every Library page while preserving their layout
+- Updated primary pages with native large titles that collapse on scroll and translucent navigation bar backgrounds
 - Removed the embedded Apple Watch app and phone-to-watch sync service to avoid companion bundle identifier mismatches after re-signing the iOS package
 - Added independent visibility toggles for the Private Messages and Song Recognition toolbar buttons in Settings → Feature Modules
 - Added artist follow controls and a searchable Followed Artists library page

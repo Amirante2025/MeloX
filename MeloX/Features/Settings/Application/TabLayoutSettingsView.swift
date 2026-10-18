@@ -8,18 +8,16 @@ struct TabLayoutSettingsView: View {
     var body: some View {
         List {
             Section {
-                HStack(spacing: 12) {
-                    Label(
-                        AppTab.recommended.settingsTitle,
-                        systemImage: AppTab.recommended.systemImage
-                    )
+                visibilityToggle(for: .home)
+                visibilityToggle(for: .search)
+            } header: {
+                Text("ui.settings.tab_layout.section.main_entries")
+            } footer: {
+                Text("ui.settings.tab_layout.visibility.footer")
+            }
 
-                    Spacer(minLength: 8)
-
-                    Text("ui.settings.tab_layout.pinned_home")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+            Section {
+                visibilityToggle(for: .recommended)
             } header: {
                 Text("ui.navigation.recommended")
             } footer: {
@@ -29,7 +27,7 @@ struct TabLayoutSettingsView: View {
             Section {
                 ForEach(
                     AppTab.movablePrimaryContentPages.filter(
-                        settings.isNavigationTabEnabled
+                        settings.isNavigationTabAvailable
                     )
                 ) { tab in
                     placementPicker(for: tab)
@@ -43,7 +41,7 @@ struct TabLayoutSettingsView: View {
             Section {
                 ForEach(
                     AppTab.libraryContentPages.filter(
-                        settings.isNavigationTabEnabled
+                        settings.isNavigationTabAvailable
                     )
                 ) { tab in
                     placementPicker(for: tab)
@@ -134,20 +132,41 @@ struct TabLayoutSettingsView: View {
     private func placementPicker(
         for tab: AppTab
     ) -> some View {
-        Picker(
-            selection: Binding(
-                get: { settings.placement(for: tab) },
-                set: { settings.setPage(tab, placement: $0) }
+        VStack(alignment: .leading, spacing: 12) {
+            visibilityToggle(for: tab)
+
+            Picker(
+                "ui.settings.tab_layout.placement",
+                selection: Binding(
+                    get: { settings.placement(for: tab) },
+                    set: { settings.setPage(tab, placement: $0) }
+                )
+            ) {
+                ForEach(tab.allowedPlacements) { placement in
+                    Text(placement.title)
+                        .tag(placement)
+                }
+            }
+            .pickerStyle(.menu)
+            .disabled(settings.isPageHidden(tab))
+            .font(.subheadline)
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func visibilityToggle(for tab: AppTab) -> some View {
+        Toggle(
+            isOn: Binding(
+                get: { !settings.isPageHidden(tab) },
+                set: { settings.setPageHidden(tab, isHidden: !$0) }
             )
         ) {
-            ForEach(tab.allowedPlacements) { placement in
-                Text(placement.title)
-                    .tag(placement)
-            }
-        } label: {
             Label(tab.settingsTitle, systemImage: tab.systemImage)
         }
-        .pickerStyle(.menu)
+        .disabled(
+            !settings.isPageHidden(tab) && !settings.canHidePage(tab)
+        )
+        .accessibilityIdentifier("page-visibility-\(tab.rawValue)")
     }
 
     private func orderRow(

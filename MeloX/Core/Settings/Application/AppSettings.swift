@@ -157,6 +157,7 @@ final class AppSettings {
             "melox.navigation.separatedLibraryPages"
         static let homeTabOrder = "melox.navigation.homeTabOrder"
         static let tabOrder = "melox.navigation.tabOrder"
+        static let hiddenPages = "melox.navigation.hiddenPages"
         static let area = "musicArea"
         static let showPlayCount = "showPlayCount"
         static let playerBackgroundStyle = "playerBackgroundStyle"
@@ -511,6 +512,15 @@ final class AppSettings {
         }
     }
 
+    private(set) var hiddenPages: Set<AppTab> {
+        didSet {
+            defaults.set(
+                hiddenPages.map(\.rawValue).sorted(),
+                forKey: Key.hiddenPages
+            )
+        }
+    }
+
     var embeddedLibraryPages: [LibraryPage] {
         LibraryPage.availableCases.filter {
             isLibraryPageEnabled($0)
@@ -518,21 +528,27 @@ final class AppSettings {
         }
     }
 
-    var homeTabs: [AppTab] {
+    private var configuredHomeTabs: [AppTab] {
         Self.normalizedHomeTabOrder(
             homeTabOrder,
             separatedLibraryPages: separatedLibraryPages
         )
-        .filter(isNavigationTabEnabled)
     }
 
-    var visibleTabs: [AppTab] {
+    var homeTabs: [AppTab] {
+        configuredHomeTabs.filter(isNavigationTabEnabled)
+    }
+
+    private var configuredTabs: [AppTab] {
         Self.normalizedTabOrder(
             tabOrder,
             separatedLibraryPages: separatedLibraryPages,
-            homeTabs: homeTabs
+            homeTabs: configuredHomeTabs
         )
-        .filter(isNavigationTabEnabled)
+    }
+
+    var visibleTabs: [AppTab] {
+        configuredTabs.filter(isNavigationTabEnabled)
     }
 
     var launchTab: AppTab {
@@ -562,7 +578,7 @@ final class AppSettings {
     }
 
     func placement(for tab: AppTab) -> AppPagePlacement {
-        if tab == .recommended || homeTabs.contains(tab) {
+        if tab == .recommended || configuredHomeTabs.contains(tab) {
             return .home
         }
         if let libraryPage = tab.libraryPage,
@@ -577,13 +593,13 @@ final class AppSettings {
         placement: AppPagePlacement
     ) {
         guard AppTab.configurablePages.contains(tab),
-              isNavigationTabEnabled(tab),
+              isNavigationTabAvailable(tab),
               tab.allowedPlacements.contains(placement) else {
             return
         }
 
-        let previousTabOrder = visibleTabs
-        var nextHomeTabs = homeTabs
+        let previousTabOrder = configuredTabs
+        var nextHomeTabs = configuredHomeTabs
         var separatedPages = Set(separatedLibraryPages)
 
         if let libraryPage = tab.libraryPage {
@@ -619,7 +635,7 @@ final class AppSettings {
         tabOrder = Self.normalizedTabOrder(
             previousTabOrder,
             separatedLibraryPages: separatedLibraryPages,
-            homeTabs: homeTabs
+            homeTabs: configuredHomeTabs
         )
         normalizeNavigationSelections()
     }
@@ -641,7 +657,7 @@ final class AppSettings {
         tabOrder = Self.normalizedTabOrder(
             tabs + disabledTabs,
             separatedLibraryPages: separatedLibraryPages,
-            homeTabs: homeTabs
+            homeTabs: configuredHomeTabs
         )
     }
 
@@ -657,17 +673,39 @@ final class AppSettings {
         normalizeNavigationSelections()
     }
 
-    func isNavigationTabEnabled(_ tab: AppTab) -> Bool {
+    func isPageHidden(_ tab: AppTab) -> Bool {
+        hiddenPages.contains(tab)
+    }
+
+    func canHidePage(_ tab: AppTab) -> Bool {
+        !visibleTabs.contains(tab) || visibleTabs.count > 1
+    }
+
+    func setPageHidden(_ tab: AppTab, isHidden: Bool) {
+        guard !isHidden || canHidePage(tab) else { return }
+        if isHidden {
+            hiddenPages.insert(tab)
+        } else {
+            hiddenPages.remove(tab)
+        }
+        normalizeNavigationSelections()
+    }
+
+    func isNavigationTabAvailable(_ tab: AppTab) -> Bool {
         guard let feature = tab.requiredContentFeature else { return true }
         return isContentFeatureEnabled(feature)
     }
 
+    func isNavigationTabEnabled(_ tab: AppTab) -> Bool {
+        isNavigationTabAvailable(tab) && !isPageHidden(tab)
+    }
+
     func isLibraryPageEnabled(_ page: LibraryPage) -> Bool {
-        guard let feature = page.requiredContentFeature else { return true }
-        return isContentFeatureEnabled(feature)
+        isNavigationTabEnabled(AppTab(libraryPage: page))
     }
 
     func resetTabLayout() {
+        hiddenPages = []
         separatedLibraryPages = [.cloud]
         homeTabOrder = Self.normalizedHomeTabOrder(
             [.recommended, .music, .podcasts],
@@ -676,7 +714,7 @@ final class AppSettings {
         tabOrder = Self.normalizedTabOrder(
             [],
             separatedLibraryPages: separatedLibraryPages,
-            homeTabs: homeTabs
+            homeTabs: configuredHomeTabs
         )
         normalizeNavigationSelections()
     }
@@ -1385,6 +1423,10 @@ final class AppSettings {
         lastLibraryPage = LibraryPage(
             rawValue: defaults.string(forKey: Key.lastLibraryPage) ?? ""
         ) ?? .songs
+        hiddenPages = Set(
+            (defaults.array(forKey: Key.hiddenPages) as? [String])?
+                .compactMap(AppTab.init(rawValue:)) ?? []
+        )
         let storedSeparatedPages = (
             defaults.array(forKey: Key.separatedLibraryPages) as? [String]
         )?.compactMap(LibraryPage.init(rawValue:))
@@ -1805,6 +1847,9 @@ final class AppSettings {
     }
 
     private func normalizeNavigationSelections() {
+        if visibleTabs.isEmpty {
+            hiddenPages.remove(.search)
+        }
         defaultLaunchTab = normalizedNavigationTab(
             for: defaultLaunchTab
         )
