@@ -8,6 +8,7 @@ struct StatusBarScrollEffect: ViewModifier {
 
     func body(content: Content) -> some View {
         content
+            .scrollClipDisabled()
             .onScrollGeometryChange(for: CGFloat.self) { geometry in
                 let distance = geometry.contentOffset.y + geometry.contentInsets.top
                 return min(1, max(0, (distance - 2) / 22))
@@ -25,7 +26,7 @@ struct StatusBarScrollEffect: ViewModifier {
                                 LinearGradient(
                                     stops: [
                                         .init(color: .black, location: 0),
-                                        .init(color: .black, location: 0.65),
+                                        .init(color: .black.opacity(0.55), location: 0.45),
                                         .init(color: .clear, location: 1),
                                     ],
                                     startPoint: .top,
@@ -34,7 +35,7 @@ struct StatusBarScrollEffect: ViewModifier {
                             }
                             .frame(height: inset + 4)
                             .offset(y: -originY)
-                            .opacity(visibility)
+                            .opacity(visibility * 0.28)
                     }
                 }
                 .allowsHitTesting(false)

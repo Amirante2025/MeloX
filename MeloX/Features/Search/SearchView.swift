@@ -181,6 +181,7 @@ struct SearchView: View {
             NativeSearchBar(text: $query, isFocused: $isSearchFocused)
                 .frame(maxWidth: .infinity)
                 .frame(height: 56)
+                .padding(.top, -8)
 
             if !trimmedQuery.isEmpty {
                 Picker("ui.navigation.search", selection: $scope) {
