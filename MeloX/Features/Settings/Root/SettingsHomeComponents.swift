@@ -10,7 +10,7 @@ struct SettingsHomeToolbarTitle: View {
                 .clipShape(.rect(cornerRadius: 7, style: .continuous))
                 .accessibilityHidden(true)
 
-            Text("MeloX")
+            Text("Music")
                 .font(.headline)
         }
     }

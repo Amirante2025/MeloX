@@ -4,7 +4,9 @@
 
 ### 简体中文
 
-- 标题与右侧头像改为同排对齐的原生大标题布局
+- 标题与右侧头像同排对齐，并随原生大标题一起滚动收起
+- 首页推荐支持快捷卡片和内容区块的独立拖动排序，自动保存顺序
+- 播放页在更多按钮左侧显示星标收藏按钮，可直接收藏或取消收藏歌曲
 - 应用显示名称改为 Music，并使用自定义音乐图标
 - 增加了音乐库搜索框的独立显示开关，关闭时清除当前搜索筛选
 - 增加了“页面与标签栏”中各页面的独立显示开关，支持隐藏首页、搜索、推荐及音乐库各项，并保留原有布局
@@ -28,7 +30,9 @@
 
 ### English
 
-- Aligned native large titles and the profile button in the same toolbar row
+- Aligned native large titles and profile actions so they collapse together while scrolling
+- Added persistent drag-to-reorder controls for Home recommendation cards and content sections
+- Added a Favorite star to the left of More in Now Playing to favorite or unfavorite the current song
 - Renamed the app to Music and applied the supplied custom music icon
 - Added an independent Library search visibility switch that clears the current filter when hidden
 - Added independent visibility switches in Pages & Tab Bar for Home, Search, Recommended, and every Library page while preserving their layout

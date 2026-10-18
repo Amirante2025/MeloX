@@ -98,15 +98,12 @@ final class ContentFeaturePreferences {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        showsPrivateMessagesButton = defaults.object(
-            forKey: Key.showsPrivateMessagesButton
-        ) as? Bool ?? true
-        showsSongRecognitionButton = defaults.object(
-            forKey: Key.showsSongRecognitionButton
-        ) as? Bool ?? true
-        showsLibrarySearch = defaults.object(
-            forKey: Key.showsLibrarySearch
-        ) as? Bool ?? true
+        func visibleByDefault(_ key: String) -> Bool {
+            defaults.object(forKey: key) == nil || defaults.bool(forKey: key)
+        }
+        showsPrivateMessagesButton = visibleByDefault(Key.showsPrivateMessagesButton)
+        showsSongRecognitionButton = visibleByDefault(Key.showsSongRecognitionButton)
+        showsLibrarySearch = visibleByDefault(Key.showsLibrarySearch)
         disabledFeatures = Set(
             (defaults.array(forKey: Key.disabledFeatures) as? [String])?
                 .compactMap(ContentFeature.init(rawValue:)) ?? []

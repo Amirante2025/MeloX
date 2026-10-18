@@ -143,10 +143,7 @@ struct NowPlayingArtworkPage: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                    NowPlayingSongActions(
-                        song: song,
-                        showsFavoriteButton: false
-                    )
+                    NowPlayingSongActions(song: song)
                 }
             }
             .padding(.bottom, NowPlayingBottomControls.coreHeight)

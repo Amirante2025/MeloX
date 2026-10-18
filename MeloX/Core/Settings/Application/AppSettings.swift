@@ -1314,6 +1314,7 @@ final class AppSettings {
     let lyricsNotifications: LyricsNotificationPreferences
     let songRecognition: SongRecognitionPreferences
     let contentFeatures: ContentFeaturePreferences
+    let homeRecommendations: HomeRecommendationPreferences
 
     @ObservationIgnored
     private let defaults: UserDefaults
@@ -1332,6 +1333,7 @@ final class AppSettings {
         )
         songRecognition = SongRecognitionPreferences(defaults: defaults)
         contentFeatures = ContentFeaturePreferences(defaults: defaults)
+        homeRecommendations = HomeRecommendationPreferences(defaults: defaults)
         hasCompletedOnboarding = defaults.bool(
             forKey: Key.hasCompletedOnboarding
         )

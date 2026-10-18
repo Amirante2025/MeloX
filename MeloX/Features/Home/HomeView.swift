@@ -44,7 +44,7 @@ struct HomeView: View {
             }
         }
         .navigationTitle("ui.navigation.home")
-        .toolbarTitleDisplayMode(.inlineLarge)
+        .toolbarTitleDisplayMode(.large)
         .onChange(of: availableSections) { _, sections in
             guard !sections.contains(section) else { return }
             section = sections.first ?? .recommended

@@ -18,6 +18,12 @@ struct TabLayoutSettingsView: View {
 
             Section {
                 visibilityToggle(for: .recommended)
+
+                NavigationLink {
+                    HomeRecommendationOrderSettingsView()
+                } label: {
+                    Label("ui.settings.home_order.title", systemImage: "list.number")
+                }
             } header: {
                 Text("ui.navigation.recommended")
             } footer: {

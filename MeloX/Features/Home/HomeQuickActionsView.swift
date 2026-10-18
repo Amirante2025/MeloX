@@ -97,13 +97,15 @@ enum HomeQuickAction: String, CaseIterable, Identifiable {
 }
 
 struct HomeQuickActionsView: View {
+    @Environment(AppSettings.self) private var settings
+
     let activeAction: HomeQuickAction?
     let perform: (HomeQuickAction) -> Void
 
     var body: some View {
         ScrollView(.horizontal) {
             LazyHStack(alignment: .top, spacing: 16) {
-                ForEach(HomeQuickAction.allCases) { action in
+                ForEach(settings.homeRecommendations.quickActionOrder) { action in
                     Button {
                         perform(action)
                     } label: {

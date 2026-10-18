@@ -41,6 +41,7 @@ struct ContentView: View {
     @State private var hasRestoredPlayback = false
     @State private var hasHandledHeartModeLaunch = false
     @State private var heartModeLaunchErrorMessage: String?
+    @State private var pageWidth: CGFloat = 0
     @Namespace private var playerTransitionNamespace
     @Namespace private var musicNavigationNamespace
 
@@ -374,7 +375,10 @@ struct ContentView: View {
                         path: navigationPathBinding(for: tab)
                     ) {
                         tabRoot(for: tab)
-                            .toolbarTitleDisplayMode(.inlineLarge)
+                            .onGeometryChange(for: CGFloat.self) { geometry in
+                                geometry.size.width
+                            } action: { pageWidth = $0 }
+                            .toolbarTitleDisplayMode(.large)
                             .toolbarBackground(
                                 .ultraThinMaterial,
                                 for: .navigationBar
@@ -410,7 +414,7 @@ struct ContentView: View {
         case .recommended:
             HomeRecommendedView()
                 .navigationTitle("ui.navigation.recommended")
-                .toolbarTitleDisplayMode(.inlineLarge)
+                .toolbarTitleDisplayMode(.large)
         case .music:
             ExploreView(navigationTitle: L10n.string("ui.navigation.music"))
         case .podcasts:
@@ -439,7 +443,29 @@ struct ContentView: View {
     private func primaryToolbar(
         for tab: AppTab
     ) -> some ToolbarContent {
-        ToolbarItemGroup(placement: .topBarTrailing) {
+        ToolbarItem(placement: .largeTitle) {
+            HStack(alignment: .center, spacing: 16) {
+                Text(tab.title)
+                    .font(.largeTitle.bold())
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                    .accessibilityAddTraits(.isHeader)
+
+                Spacer(minLength: 12)
+
+                primaryActions(for: tab)
+            }
+            .frame(
+                width: pageWidth > 32 ? pageWidth - 32 : nil,
+                alignment: .leading
+            )
+            .accessibilityIdentifier("page-header-\(tab.rawValue)")
+        }
+        .sharedBackgroundVisibility(.hidden)
+    }
+
+    private func primaryActions(for tab: AppTab) -> some View {
+        HStack(spacing: 10) {
             if library.isLoggedIn
                 && settings.contentFeatures.showsPrivateMessagesButton {
                 Button {
@@ -470,6 +496,9 @@ struct ContentView: View {
             }
             .accessibilityLabel(accountToolbarAccessibilityLabel)
         }
+        .font(.title3)
+        .buttonStyle(.glass)
+        .buttonBorderShape(.circle)
     }
 
     @ViewBuilder

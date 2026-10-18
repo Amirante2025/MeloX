@@ -11,6 +11,7 @@ struct NowPlayingView: View {
     private var accessibilityVoiceOverEnabled
     @Environment(PlayerStore.self) private var player
     @Environment(AppSettings.self) private var settings
+    @Environment(LibraryStore.self) private var library
     @Environment(LyricsStore.self) private var lyricsStore
 
     @State private var pageTransition: NowPlayingTransitionCoordinator
@@ -136,6 +137,19 @@ struct NowPlayingView: View {
         }
         .keepsScreenAwake(keepsPlayerScreenAwake)
         .preferredColorScheme(.dark)
+        .alert(
+            "ui.error.favorite_failed",
+            isPresented: Binding(
+                get: { library.errorMessage != nil },
+                set: { if !$0 { library.clearError() } }
+            )
+        ) {
+            Button("ui.common.ok", role: .cancel) {
+                library.clearError()
+            }
+        } message: {
+            Text(library.errorMessage ?? L10n.string("ui.common.unknown_error"))
+        }
         .task(id: beatAnalysisTaskID) {
             await loadBeatTimeline()
         }

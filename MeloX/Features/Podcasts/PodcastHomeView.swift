@@ -25,7 +25,7 @@ struct PodcastHomeView: View {
         if showsNavigationTitle {
             pageContent
                 .navigationTitle("ui.navigation.podcasts")
-                .toolbarTitleDisplayMode(.inlineLarge)
+                .toolbarTitleDisplayMode(.large)
         } else {
             pageContent
         }

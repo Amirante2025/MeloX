@@ -8,12 +8,11 @@ struct NowPlayingSongActions: View {
     @Environment(ListenTogetherStore.self) private var listenTogether
 
     let song: Song
-    var showsFavoriteButton = true
 
     @State private var presentedSheet: NowPlayingSongSheet?
     var body: some View {
         HStack(spacing: 10) {
-            if showsFavoriteButton, !song.isPodcastProgram {
+            if !song.isPodcastProgram {
                 favoriteButton
             }
             songMenu
@@ -53,6 +52,8 @@ struct NowPlayingSongActions: View {
                     : "star"
             )
             .font(.title3.weight(.medium))
+            .foregroundStyle(.white)
+            .symbolEffect(.bounce, value: library.contains(song: song))
             .frame(width: 40, height: 40)
             .background(.white.opacity(0.13), in: .circle)
             .contentShape(.circle)
@@ -63,6 +64,8 @@ struct NowPlayingSongActions: View {
                 ? L10n.string("ui.common.unfavorite")
                 : L10n.string("ui.common.favorite")
         )
+        .accessibilityAddTraits(library.contains(song: song) ? .isSelected : [])
+        .accessibilityIdentifier("now-playing-favorite")
     }
     private var songMenu: some View {
         Menu {
@@ -223,6 +226,7 @@ struct NowPlayingSongActions: View {
         .tint(.white)
         .menuOrder(.fixed)
         .accessibilityLabel("ui.common.more")
+        .accessibilityIdentifier("now-playing-more")
     }
 
     private var lyricsSourceMenu: some View {

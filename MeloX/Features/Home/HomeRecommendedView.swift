@@ -30,6 +30,13 @@ struct HomeRecommendedView: View {
         )
     }
 
+    private var orderedSections: [HomeRecommendationSection] {
+        let sections = Dictionary(
+            uniqueKeysWithValues: feed.sections.map { ($0.slot, $0) }
+        )
+        return settings.homeRecommendations.sectionOrder.compactMap { sections[$0] }
+    }
+
     var body: some View {
         content
         .task(
@@ -110,7 +117,7 @@ struct HomeRecommendedView: View {
                         )
                         .padding(.horizontal)
                 } else {
-                    ForEach(feed.sections) { section in
+                    ForEach(orderedSections) { section in
                         HomeRecommendationSectionView(
                             section: section
                         )

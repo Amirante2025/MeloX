@@ -136,6 +136,7 @@ enum SettingsCatalog {
                     subtitle: L10n.string("ui.settings.catalog.tab_layout.subtitle"),
                     systemImage: "rectangle.3.group",
                     keywords: L10n.keywords("ui.settings.catalog.tab_layout.keywords")
+                        + L10n.keywords("ui.settings.home_order.keywords")
                         + (AppFeatureAvailability.downloads
                             ? L10n.keywords("ui.settings.catalog.download.keyword")
                             : [])
