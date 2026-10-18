@@ -1,0 +1,53 @@
+name: Build custom iOS IPA / 构建自定义 IPA
+
+on:
+  push:
+    branches:
+      - "codex/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: custom-ipa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build unsigned iOS IPA / 构建未签名 IPA
+    runs-on: macos-26
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout / 检出代码
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Select Xcode / 选择 Xcode
+        shell: bash
+        run: |
+          set -euo pipefail
+          for candidate in /Applications/Xcode_26.6.app /Applications/Xcode_26.6.0.app /Applications/Xcode.app; do
+            if [[ -d "${candidate}" ]]; then
+              sudo xcode-select -s "${candidate}/Contents/Developer"
+              break
+            fi
+          done
+          xcodebuild -version
+          xcodebuild -showsdks
+
+      - name: Build IPA / 构建 IPA
+        run: bash build_ios_unsigned.sh
+
+      - name: Upload IPA / 上传 IPA
+        uses: actions/upload-artifact@v7
+        with:
+          name: MeloX-custom-iOS-${{ github.run_number }}
+          path: |
+            build/MeloX-iOS-unsigned.ipa
+            build/ReleaseNotes.json
+            build/ReleaseNotes.md
+          if-no-files-found: error
+          retention-days: 14

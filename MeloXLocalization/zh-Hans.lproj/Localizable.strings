@@ -389,6 +389,11 @@
 
 "ui.settings.content_features.section" = "可选功能";
 "ui.settings.content_features.footer" = "关闭后会隐藏相关入口并停止主动载入对应内容，不会删除收藏、下载、云盘歌曲或播放记录。";
+"ui.settings.toolbar_buttons.section" = "工具栏按钮";
+"ui.settings.toolbar_buttons.show_private_messages" = "显示私信按钮";
+"ui.settings.toolbar_buttons.show_song_recognition" = "显示听歌识曲按钮";
+"ui.settings.toolbar_buttons.footer" = "控制各主页面右上角的按钮。私信按钮仅在登录后显示。";
+"ui.settings.toolbar_buttons.keywords" = "工具栏|按钮|显示|隐藏|私信|听歌识曲";
 "ui.settings.developer.beatnet_panel" = "BeatNet 实时调试面板";
 "ui.settings.developer.entry" = "入口";
 "ui.settings.developer.entry.value" = "播放器“…”菜单";

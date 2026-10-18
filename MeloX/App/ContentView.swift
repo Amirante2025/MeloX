@@ -431,7 +431,8 @@ struct ContentView: View {
         for tab: AppTab
     ) -> some ToolbarContent {
         ToolbarItemGroup(placement: .topBarTrailing) {
-            if library.isLoggedIn {
+            if library.isLoggedIn
+                && settings.contentFeatures.showsPrivateMessagesButton {
                 Button {
                     navigate(to: .privateMessages, in: tab)
                 } label: {
@@ -444,12 +445,14 @@ struct ContentView: View {
                 .accessibilityHint("ui.messages.private.open_hint")
             }
 
-            Button {
-                navigate(to: .songRecognition, in: tab)
-            } label: {
-                Image(systemName: "waveform")
+            if settings.contentFeatures.showsSongRecognitionButton {
+                Button {
+                    navigate(to: .songRecognition, in: tab)
+                } label: {
+                    Image(systemName: "waveform")
+                }
+                .accessibilityLabel("ui.recognition.title")
             }
-            .accessibilityLabel("ui.recognition.title")
 
             Button {
                 presentedSheet = .settings

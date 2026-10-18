@@ -49,6 +49,28 @@ final class ContentFeaturePreferences {
     private enum Key {
         static let disabledFeatures =
             "melox.contentFeatures.disabledFeatures"
+        static let showsPrivateMessagesButton =
+            "melox.contentFeatures.showsPrivateMessagesButton"
+        static let showsSongRecognitionButton =
+            "melox.contentFeatures.showsSongRecognitionButton"
+    }
+
+    var showsPrivateMessagesButton: Bool {
+        didSet {
+            defaults.set(
+                showsPrivateMessagesButton,
+                forKey: Key.showsPrivateMessagesButton
+            )
+        }
+    }
+
+    var showsSongRecognitionButton: Bool {
+        didSet {
+            defaults.set(
+                showsSongRecognitionButton,
+                forKey: Key.showsSongRecognitionButton
+            )
+        }
     }
 
     private(set) var disabledFeatures: Set<ContentFeature> {
@@ -65,6 +87,12 @@ final class ContentFeaturePreferences {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
+        showsPrivateMessagesButton = defaults.object(
+            forKey: Key.showsPrivateMessagesButton
+        ) as? Bool ?? true
+        showsSongRecognitionButton = defaults.object(
+            forKey: Key.showsSongRecognitionButton
+        ) as? Bool ?? true
         disabledFeatures = Set(
             (defaults.array(forKey: Key.disabledFeatures) as? [String])?
                 .compactMap(ContentFeature.init(rawValue:)) ?? []

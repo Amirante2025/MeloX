@@ -5,7 +5,24 @@ struct ContentFeatureSettingsView: View {
     @Environment(LibraryStore.self) private var library
 
     var body: some View {
+        @Bindable var contentFeatures = settings.contentFeatures
+
         Form {
+            Section {
+                Toggle(
+                    "ui.settings.toolbar_buttons.show_private_messages",
+                    isOn: $contentFeatures.showsPrivateMessagesButton
+                )
+                Toggle(
+                    "ui.settings.toolbar_buttons.show_song_recognition",
+                    isOn: $contentFeatures.showsSongRecognitionButton
+                )
+            } header: {
+                Text("ui.settings.toolbar_buttons.section")
+            } footer: {
+                Text("ui.settings.toolbar_buttons.footer")
+            }
+
             Section {
                 ForEach(ContentFeature.availableCases) { feature in
                     Toggle(isOn: binding(for: feature)) {

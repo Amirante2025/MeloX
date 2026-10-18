@@ -4,6 +4,7 @@
 
 ### 简体中文
 
+- 增加了私信和听歌识曲工具栏按钮的独立显示开关，可在“设置 → 功能模块”中调整
 - 增加了歌手关注与取消关注，以及可搜索的已关注歌手音乐库页面
 - 增加了搜索联想与输入补全，可在通用设置中开启或关闭
 - 增加了从自建歌单移除歌曲的功能
@@ -21,6 +22,7 @@
 
 ### English
 
+- Added independent visibility toggles for the Private Messages and Song Recognition toolbar buttons in Settings → Feature Modules
 - Added artist follow controls and a searchable Followed Artists library page
 - Added search suggestions and text completion, with a toggle in General settings
 - Added the ability to remove songs from your own playlists

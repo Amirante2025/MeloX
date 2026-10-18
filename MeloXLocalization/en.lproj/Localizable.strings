@@ -389,6 +389,11 @@
 
 "ui.settings.content_features.section" = "Optional Features";
 "ui.settings.content_features.footer" = "Turning a feature off hides its entry points and stops proactively loading its content. Favorites, downloads, cloud songs, and playback history are not deleted.";
+"ui.settings.toolbar_buttons.section" = "Toolbar Buttons";
+"ui.settings.toolbar_buttons.show_private_messages" = "Show Private Messages Button";
+"ui.settings.toolbar_buttons.show_song_recognition" = "Show Song Recognition Button";
+"ui.settings.toolbar_buttons.footer" = "Controls the buttons in the top-right corner of each main page. The Private Messages button only appears when signed in.";
+"ui.settings.toolbar_buttons.keywords" = "toolbar|buttons|show|hide|private messages|song recognition|music recognition";
 "ui.settings.developer.beatnet_panel" = "BeatNet Live Debug Panel";
 "ui.settings.developer.entry" = "Entry Point";
 "ui.settings.developer.entry.value" = "Player More (…) Menu";
