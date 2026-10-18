@@ -50,13 +50,27 @@ xcrun simctl status_bar "$DEVICE_ID" override \
 APP_PATH="$DERIVED_DATA/Build/Products/Debug-iphonesimulator/MeloX.app"
 BUNDLE_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP_PATH/Info.plist")"
 xcrun simctl install "$DEVICE_ID" "$APP_PATH"
-xcrun simctl launch "$DEVICE_ID" "$BUNDLE_ID" \
+LAUNCH_RESULT="$(xcrun simctl launch "$DEVICE_ID" "$BUNDLE_ID" \
   -melox.hasCompletedOnboarding YES \
   -melox.localization.language simplifiedChinese \
   -appReleaseNotes.lastPresentedVersion 99.0.0 \
   -appRecommendation.hasPresentedPrompt YES \
   -checksUpdatesOnLaunch NO \
   -melox.contentFeatures.showsPrivateMessagesButton NO \
-  -melox.contentFeatures.showsSongRecognitionButton NO
+  -melox.contentFeatures.showsSongRecognitionButton NO)"
+printf '%s\n' "$LAUNCH_RESULT"
 sleep 10
+xcrun simctl io "$DEVICE_ID" screenshot "$PREVIEW/Music-home-10s.png"
+sleep 20
+xcrun simctl io "$DEVICE_ID" screenshot "$PREVIEW/Music-home-30s.png"
+sleep 30
 xcrun simctl io "$DEVICE_ID" screenshot "$PREVIEW/Music-home.png"
+
+xcrun simctl spawn "$DEVICE_ID" log show --style compact --last 2m \
+  --predicate 'process == "MeloX" AND (eventMessage CONTAINS[c] "error" OR eventMessage CONTAINS[c] "exception" OR eventMessage CONTAINS[c] "fatal")' \
+  > "$PREVIEW/Music-runtime-errors.log" 2>&1 || true
+
+if [[ "$LAUNCH_RESULT" =~ :[[:space:]]([0-9]+) ]]; then
+  /usr/bin/sample "${BASH_REMATCH[1]}" 1 1 \
+    -file "$PREVIEW/Music-process-sample.txt" || true
+fi

@@ -79,9 +79,10 @@ jobs:
         run: bash .github/scripts/capture_ios_preview.sh
 
       - name: Upload preview / 上传预览
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: Music-preview-${{ github.run_number }}
-          path: build/preview/Music-home.png
+          path: build/preview/
           if-no-files-found: error
           retention-days: 14
