@@ -15,6 +15,8 @@ struct SearchView: View {
     @State private var searchControlsHeight: CGFloat = 48
     @State private var viewportHeight: CGFloat = 0
     @State private var suggestions: [String] = []
+    @State private var suggestionsPhase: LoadingPhase = .loaded
+    @State private var suggestionRetryID = 0
     @State private var resultCache = SearchResultCache()
     @State private var scope: SearchKind = .songs
     @State private var phase: LoadingPhase = .loaded
@@ -52,19 +54,8 @@ struct SearchView: View {
                             .accessibilityHidden(true)
                             .id(ScrollAnchor.searchContent)
 
-                        if isSearchFocused, settings.searchSuggestionsEnabled {
-                            ForEach(suggestions, id: \.self) { suggestion in
-                                Button {
-                                    submitSearch(suggestion)
-                                } label: {
-                                    Label {
-                                        Text(verbatim: suggestion)
-                                    } icon: {
-                                        Image(systemName: "magnifyingglass")
-                                    }
-                                }
-                                .buttonStyle(.plain)
-                            }
+                        if showsSuggestions {
+                            suggestionRows
                         }
 
                         if showsSearchResults {
@@ -73,7 +64,7 @@ struct SearchView: View {
                             } else {
                                 searchResults
                             }
-                        } else if trimmedQuery.isEmpty || !isSearchFocused {
+                        } else if trimmedQuery.isEmpty || (!isSearchFocused && !showsSuggestions) {
                             SearchDiscoveryView(
                                 recommendations: discoveryRecommendations,
                                 phase: discoveryPhase,
@@ -86,7 +77,7 @@ struct SearchView: View {
                             .listRowBackground(Color.clear)
                         }
 
-                        if isSearchFocused || showsSearchResults {
+                        if isSearchFocused || showsSearchResults || showsSuggestions {
                             Color.clear
                                 .frame(height: minimumResultsSpacer)
                                 .listRowInsets(EdgeInsets())
@@ -144,7 +135,7 @@ struct SearchView: View {
         .task {
             await loadDiscoveryRecommendations()
         }
-        .task(id: "\(settings.searchSuggestionsEnabled):\(query)") {
+        .task(id: "\(showsSuggestions):\(trimmedQuery):\(suggestionRetryID)") {
             await loadSuggestions()
         }
         .overlay {
@@ -244,6 +235,49 @@ struct SearchView: View {
         !isSearchFocused && !submittedQuery.isEmpty && submittedQuery == trimmedQuery
     }
 
+    private var showsSuggestions: Bool {
+        settings.searchSuggestionsEnabled && !trimmedQuery.isEmpty
+            && (isSearchFocused || submittedQuery != trimmedQuery)
+            && NeteaseMusicLinkParser.parse(trimmedQuery) == nil
+    }
+
+    @ViewBuilder
+    private var suggestionRows: some View {
+        if suggestionsPhase == .loading {
+            HStack(spacing: 12) {
+                ProgressView()
+                Text("ui.search.suggestions_loading")
+                    .foregroundStyle(.secondary)
+            }
+        } else if case .failed = suggestionsPhase {
+            HStack {
+                Label("ui.search.suggestions_failed", systemImage: "wifi.exclamationmark")
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button("ui.common.retry") {
+                    suggestionRetryID += 1
+                }
+                .buttonStyle(.borderless)
+            }
+        }
+
+        ForEach(suggestions, id: \.self) { suggestion in
+            Button {
+                submitSearch(suggestion)
+            } label: {
+                Label {
+                    Text(verbatim: suggestion)
+                } icon: {
+                    Image(systemName: "magnifyingglass")
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("search-suggestion-\(suggestion)")
+        }
+    }
+
     private var searchRequest: SearchRequest {
         SearchRequest(
             query: submittedQuery,
@@ -274,7 +308,7 @@ struct SearchView: View {
     // leave the screen without pushing the focused search field back down.
     private var minimumResultsSpacer: CGFloat {
         let resultCount: Int
-        if isSearchFocused {
+        if isSearchFocused || showsSuggestions {
             resultCount = 0
         } else if recognizedLink != nil {
             resultCount = linkedSong == nil ? 0 : 1
@@ -287,7 +321,7 @@ struct SearchView: View {
             case .podcasts: resultCount = podcasts.count
             }
         }
-        let suggestionCount = isSearchFocused && settings.searchSuggestionsEnabled
+        let suggestionCount = showsSuggestions
             ? suggestions.count : 0
         return max(0, viewportHeight - 56 - CGFloat(resultCount + suggestionCount) * 44)
     }
@@ -308,16 +342,20 @@ struct SearchView: View {
 
     private func loadSuggestions() async {
         suggestions = []
+        suggestionsPhase = .loaded
         let keywords = trimmedQuery
-        guard settings.searchSuggestionsEnabled, !keywords.isEmpty,
-              NeteaseMusicLinkParser.parse(keywords) == nil else { return }
+        guard showsSuggestions else { return }
+        suggestionsPhase = .loading
         do {
             try await Task.sleep(for: .milliseconds(300))
             let loaded = try await api.searchSuggestions(keywords)
             try Task.checkCancellation()
+            guard showsSuggestions, keywords == trimmedQuery else { return }
             suggestions = loaded
+            suggestionsPhase = .loaded
         } catch {
-            return
+            guard !Task.isCancelled, showsSuggestions, keywords == trimmedQuery else { return }
+            suggestionsPhase = .failed(error.localizedDescription)
         }
     }
 

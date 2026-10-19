@@ -1053,6 +1053,8 @@
 "ui.search.link_failed" = "无法打开链接";
 "ui.error.favorite_failed" = "收藏失败";
 "ui.search.searching" = "搜索中";
+"ui.search.suggestions_loading" = "正在载入联想";
+"ui.search.suggestions_failed" = "联想加载失败";
 "ui.search.reading_song_link" = "正在读取歌曲链接";
 "ui.search.section.linked_song" = "链接中的歌曲";
 "ui.listen_together.invitation" = "一起听邀请";

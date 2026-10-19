@@ -170,11 +170,11 @@ private final class StatusBarGradientMaskView: UIView {
     func update(visibility: CGFloat) {
         guard let gradient = layer as? CAGradientLayer else { return }
         gradient.colors = [
-            UIColor.black.withAlphaComponent(0.65 * visibility).cgColor,
-            UIColor.black.withAlphaComponent(0.35 * visibility).cgColor,
+            UIColor.black.withAlphaComponent(visibility).cgColor,
+            UIColor.black.withAlphaComponent(0.85 * visibility).cgColor,
             UIColor.clear.cgColor,
         ]
-        gradient.locations = [0, 0.5, 1]
+        gradient.locations = [0, 0.6, 1]
         gradient.startPoint = CGPoint(x: 0.5, y: 0)
         gradient.endPoint = CGPoint(x: 0.5, y: 1)
     }

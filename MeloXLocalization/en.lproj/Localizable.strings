@@ -1053,6 +1053,8 @@
 "ui.search.link_failed" = "Could Not Open Link";
 "ui.error.favorite_failed" = "Favorite Operation Failed";
 "ui.search.searching" = "Searching";
+"ui.search.suggestions_loading" = "Loading Suggestions";
+"ui.search.suggestions_failed" = "Couldn't Load Suggestions";
 "ui.search.reading_song_link" = "Reading Song Link";
 "ui.search.section.linked_song" = "Song from Link";
 "ui.listen_together.invitation" = "Listen Together Invitation";
