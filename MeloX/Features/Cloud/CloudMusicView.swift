@@ -108,7 +108,7 @@ struct CloudMusicView: View {
                 content().frame(minHeight: 320)
             }
         }
-        .modifier(StatusBarScrollEffect())
+        .modifier(NativeStatusBarScrollEffect())
     }
 
     @ViewBuilder
@@ -192,7 +192,7 @@ struct CloudMusicView: View {
 
             paginationFooter
         }
-        .modifier(StatusBarScrollEffect())
+        .modifier(NativeStatusBarScrollEffect())
         .listStyle(.plain)
         .refreshable {
             await cloud.refresh(force: true)

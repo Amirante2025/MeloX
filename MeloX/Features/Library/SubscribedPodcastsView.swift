@@ -61,7 +61,7 @@ struct SubscribedPodcastsView: View {
                 .listRowSeparator(.hidden)
             }
         }
-        .modifier(StatusBarScrollEffect())
+        .modifier(NativeStatusBarScrollEffect())
         .listStyle(.plain)
         .refreshable {
             await library.refresh(force: true)

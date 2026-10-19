@@ -78,7 +78,7 @@ struct LibraryDownloadsView: View {
                 }
             }
         }
-        .modifier(StatusBarScrollEffect())
+        .modifier(NativeStatusBarScrollEffect())
         .listStyle(.plain)
         .overlay {
             if filteredDownloads.isEmpty,

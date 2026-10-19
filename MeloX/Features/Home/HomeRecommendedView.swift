@@ -139,7 +139,7 @@ struct HomeRecommendedView: View {
             .padding(.top, 8)
             .padding(.bottom, 28)
         }
-        .modifier(StatusBarScrollEffect())
+        .modifier(NativeStatusBarScrollEffect())
         .refreshable {
             await load(refresh: true)
         }

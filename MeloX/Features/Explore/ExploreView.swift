@@ -57,7 +57,7 @@ struct ExploreView: View {
             .padding(.horizontal)
             .padding(.bottom, 28)
         }
-        .modifier(StatusBarScrollEffect())
+        .modifier(NativeStatusBarScrollEffect())
         .refreshable {
             await load(category: category, force: true)
         }

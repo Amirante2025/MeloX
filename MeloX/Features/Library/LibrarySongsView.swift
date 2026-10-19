@@ -40,9 +40,7 @@ struct LibrarySongsView: View {
 
                 if !isSearching {
                     heartModeButton
-                        .listRowInsets(
-                            EdgeInsets(top: 8, leading: 20, bottom: 20, trailing: 20)
-                        )
+                        .listRowSeparator(.hidden, edges: .bottom)
                 }
             }
 
@@ -51,13 +49,13 @@ struct LibrarySongsView: View {
                     Task { await player.play(song, in: displayedSongs) }
                 } label: {
                     TrackRowView(song: song, showsArtwork: true)
-                        .padding(
-                            .top,
-                            !isSearching && song.id == displayedSongs.first?.id ? 12 : 0
-                        )
                 }
                 .buttonStyle(.plain)
                 .compactSongListRow()
+                .listRowSeparator(
+                    !isSearching && song.id == displayedSongs.first?.id ? .hidden : .automatic,
+                    edges: .top
+                )
                 .swipeActions(edge: .trailing) {
                     Button(role: .destructive) {
                         library.toggle(song: song)
@@ -69,7 +67,7 @@ struct LibrarySongsView: View {
 
             paginationFooter
         }
-        .modifier(StatusBarScrollEffect())
+        .modifier(NativeStatusBarScrollEffect())
         .listStyle(.plain)
         .refreshable {
             await library.refresh(force: true)
@@ -153,6 +151,7 @@ struct LibrarySongsView: View {
                         .controlSize(.small)
                 }
             }
+            .padding(.bottom, 12)
         }
         .disabled(!library.canStartHeartMode || isStartingHeartMode)
     }

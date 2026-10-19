@@ -38,7 +38,7 @@ struct HomeView: View {
                         )
                     }
                 }
-                .modifier(StatusBarScrollEffect())
+                .modifier(NativeStatusBarScrollEffect())
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

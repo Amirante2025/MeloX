@@ -1,6 +1,37 @@
 import SwiftUI
 import UIKit
 
+/// Register a native top bar even when the page hides its navigation bar.
+/// The transparent, one-pixel bar extends the system scroll edge effect into
+/// the status-bar safe area without pinning the page title or adding a tint.
+struct NativeStatusBarScrollEffect: ViewModifier {
+    @Environment(\.scrollingPageHeader) private var pageHeader
+    @Environment(\.displayScale) private var displayScale
+    @State private var hasScrolled = false
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if pageHeader != nil {
+            content
+                .safeAreaBar(edge: .top, spacing: 0) {
+                    Color.clear
+                        .frame(height: 1 / max(displayScale, 1))
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                }
+                .scrollEdgeEffectStyle(.soft, for: .top)
+                .scrollEdgeEffectHidden(!hasScrolled, for: .top)
+                .onScrollGeometryChange(for: Bool.self) { geometry in
+                    geometry.contentOffset.y + geometry.contentInsets.top > 2
+                } action: { _, value in
+                    hasScrolled = value
+                }
+        } else {
+            content
+        }
+    }
+}
+
 /// Root pages hide the navigation bar, so they need their own scroll-aware
 /// system material behind the status bar.
 /// Apply directly to the vertical ScrollView or List, not its page container.
