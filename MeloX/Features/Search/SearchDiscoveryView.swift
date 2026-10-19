@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SearchDiscoveryView: View {
     @Environment(AppSettings.self) private var settings
+    @Environment(\.openMusicRoute) private var openMusicRoute
 
     let recommendations: [Playlist]
     let phase: LoadingPhase
@@ -22,7 +23,10 @@ struct SearchDiscoveryView: View {
 
                 LazyVGrid(columns: columns, spacing: 12) {
                     ForEach(visibleCategories) { category in
-                        NavigationLink(value: category.route) {
+                        // Cards share a List row, so navigate only from the tapped button.
+                        Button {
+                            openMusicRoute(category.route)
+                        } label: {
                             SearchCategoryCard(category: category)
                         }
                         .buttonStyle(.plain)
@@ -54,7 +58,9 @@ struct SearchDiscoveryView: View {
                 ScrollView(.horizontal) {
                     LazyHStack(alignment: .top, spacing: 14) {
                         ForEach(recommendations) { playlist in
-                            NavigationLink(value: MusicRoute.playlist(playlist)) {
+                            Button {
+                                openMusicRoute(.playlist(playlist))
+                            } label: {
                                 MediaCardView(
                                     title: playlist.name,
                                     subtitle: playlist.copywriter ?? playlist.creator?.nickname,

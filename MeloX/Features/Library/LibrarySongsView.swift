@@ -51,6 +51,10 @@ struct LibrarySongsView: View {
                     Task { await player.play(song, in: displayedSongs) }
                 } label: {
                     TrackRowView(song: song, showsArtwork: true)
+                        .padding(
+                            .top,
+                            !isSearching && song.id == displayedSongs.first?.id ? 12 : 0
+                        )
                 }
                 .buttonStyle(.plain)
                 .compactSongListRow()
