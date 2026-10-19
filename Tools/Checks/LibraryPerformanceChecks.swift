@@ -106,7 +106,7 @@ enum Failure: Error { case check(String) }
         api.holdSupplements = true
         let refresh = Task { await library.refresh() }
         try await until { api.heldSupplements.count == 5 }
-        try expect(library.favoriteSongs.count == 100 && library.phase == .loaded,
+        try expect(library.favoriteSongs.count == 100 && library.profile != nil,
                    "Favorites waited for unrelated account/library sections")
         try expect(Array(api.events.prefix(4)) == ["account", "playlists", "ids", "songs"],
                    "Favorites did not load before supplements")
@@ -165,6 +165,20 @@ enum Failure: Error { case check(String) }
         try expect(race.profile?.id == 2, "Old account request overwrote the new session")
         print("PASS late account response cannot overwrite a new session")
 
+        let cancelledAPI = NeteaseAPI()
+        cancelledAPI.holdSupplements = true
+        let cancelled = LibraryStore(api: cancelledAPI, settings: settings, favoriteCache: cache)
+        let interrupted = Task { await cancelled.refresh() }
+        try await until { cancelledAPI.heldSupplements.count == 5 }
+        interrupted.cancel()
+        cancelledAPI.releaseSupplements()
+        await interrupted.value
+        let accountRequestsBeforeRetry = cancelledAPI.events.filter { $0 == "account" }.count
+        await cancelled.refresh()
+        try expect(cancelledAPI.events.filter { $0 == "account" }.count == accountRequestsBeforeRetry + 1
+                   && cancelled.phase == .loaded, "Cancelled supplementary refresh could not resume")
+        print("PASS interrupted supplementary refresh can retry while keeping visible favorites")
+
         let expansion = PlaybackQueueExpansion()
         var pages: [[Int]] = []
         var appended: [Int] = []
@@ -202,6 +216,6 @@ enum Failure: Error { case check(String) }
         try await until { appended == [2] }
         try expect(appended == [2], "Superseded queue appended an old page")
         print("PASS superseded queue cannot append stale metadata")
-        print("10 library/cache/queue checks passed")
+        print("11 library/cache/queue checks passed")
     }
 }

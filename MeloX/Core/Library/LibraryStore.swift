@@ -245,8 +245,6 @@ final class LibraryStore {
                 guard isCurrentRefresh(refreshID, cookie: cookie) else { return }
                 partialFailures.append(L10n.format("ui.library.error.favorite_songs", error.localizedDescription))
             }
-            phase = .loaded
-
             async let detail: String? = loadAdditionalResource(
                 cookie: cookie, refreshID: refreshID, failureKey: nil,
                 load: { try await self.api.userDetail(userID: loadedProfile.id) },
@@ -270,6 +268,7 @@ final class LibraryStore {
             if !partialFailures.isEmpty {
                 errorMessage = L10n.format("ui.library.error.partial", partialFailures.joined(separator: "\n"))
             }
+            phase = .loaded
         } catch {
             guard isCurrentRefresh(refreshID, cookie: cookie) else { return }
             if case APIError.notLoggedIn = error {
