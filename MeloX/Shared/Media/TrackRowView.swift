@@ -199,7 +199,46 @@ struct TrackRowView: View {
 
 extension View {
     func compactSongListRow(showsArtwork: Bool = true) -> some View {
-        listRowInsets(EdgeInsets(top: 4, leading: 20, bottom: 4, trailing: 20))
+        modifier(CompactSongListRow(showsArtwork: showsArtwork))
+    }
+
+    func librarySongListLayout() -> some View {
+        modifier(LibrarySongListLayout())
+    }
+
+    func librarySongListLastAction(isSeparated: Bool = true) -> some View {
+        padding(.vertical, isSeparated ? 6 : 0)
+            .listRowSeparator(isSeparated ? .hidden : .automatic, edges: .bottom)
+    }
+}
+
+private struct SongListSystemHorizontalInsetsKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
+private extension EnvironmentValues {
+    var songListUsesSystemHorizontalInsets: Bool {
+        get { self[SongListSystemHorizontalInsetsKey.self] }
+        set { self[SongListSystemHorizontalInsetsKey.self] = newValue }
+    }
+}
+
+private struct LibrarySongListLayout: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .listStyle(.plain)
+            .environment(\.songListUsesSystemHorizontalInsets, true)
+    }
+}
+
+private struct CompactSongListRow: ViewModifier {
+    @Environment(\.songListUsesSystemHorizontalInsets) private var usesSystemHorizontalInsets
+    let showsArtwork: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .listRowInsets(.horizontal, usesSystemHorizontalInsets ? nil : 20)
+            .listRowInsets(.vertical, 4)
             .alignmentGuide(.listRowSeparatorLeading) { _ in
                 showsArtwork ? 60 : 0
             }

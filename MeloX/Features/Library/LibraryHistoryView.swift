@@ -17,13 +17,17 @@ struct LibraryHistoryView: View {
                 Button {
                     Task { await player.playAll(displayedSongs) }
                 } label: {
-                    Label(
-                        isSearching
-                            ? L10n.string("ui.common.play_search_results")
-                            : L10n.string("ui.common.play_all"),
-                        systemImage: "play.fill"
-                    )
+                    HStack {
+                        Label(
+                            isSearching
+                                ? L10n.string("ui.common.play_search_results")
+                                : L10n.string("ui.common.play_all"),
+                            systemImage: "play.fill"
+                        )
+                        Spacer()
+                    }
                 }
+                .librarySongListLastAction(isSeparated: !isSearching)
             }
 
             ForEach(displayedSongs) { song in
@@ -34,10 +38,14 @@ struct LibraryHistoryView: View {
                 }
                 .buttonStyle(.plain)
                 .compactSongListRow()
+                .listRowSeparator(
+                    !isSearching && song.id == displayedSongs.first?.id ? .hidden : .automatic,
+                    edges: .top
+                )
             }
         }
         .modifier(NativeStatusBarScrollEffect())
-        .listStyle(.plain)
+        .librarySongListLayout()
         .refreshable {
             await library.refresh(force: true)
         }

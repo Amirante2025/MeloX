@@ -39,7 +39,7 @@ struct LibrarySongsView: View {
 
                 if !isSearching {
                     heartModeButton
-                        .listRowSeparator(.hidden, edges: .bottom)
+                        .librarySongListLastAction()
                 }
             }
 
@@ -67,7 +67,7 @@ struct LibrarySongsView: View {
             paginationFooter
         }
         .modifier(NativeStatusBarScrollEffect())
-        .listStyle(.plain)
+        .librarySongListLayout()
         .refreshable {
             await library.refresh(force: true)
             if isSearching {
@@ -133,7 +133,6 @@ struct LibrarySongsView: View {
                         .controlSize(.small)
                 }
             }
-            .padding(.bottom, 12)
         }
         .disabled(!library.canStartHeartMode || isStartingHeartMode)
     }

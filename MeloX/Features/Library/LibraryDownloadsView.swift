@@ -42,8 +42,7 @@ struct LibraryDownloadsView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                .padding(.vertical, 6)
-                .listRowSeparator(.hidden, edges: .bottom)
+                .librarySongListLastAction()
             }
 
             if !activeDownloadSongs.isEmpty {
@@ -89,7 +88,7 @@ struct LibraryDownloadsView: View {
             }
         }
         .modifier(NativeStatusBarScrollEffect())
-        .listStyle(.plain)
+        .librarySongListLayout()
         .overlay {
             if filteredDownloads.isEmpty,
                activeDownloadSongs.isEmpty {
