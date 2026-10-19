@@ -43,6 +43,7 @@ struct PodcastHomeView: View {
                         initialState.frame(minHeight: 320)
                     }
                 }
+                .modifier(StatusBarScrollEffect())
             }
         }
         .task(
@@ -123,6 +124,7 @@ struct PodcastHomeView: View {
             .padding(.vertical, 8)
             .padding(.bottom, 24)
         }
+        .modifier(StatusBarScrollEffect())
         .refreshable {
             await load()
         }

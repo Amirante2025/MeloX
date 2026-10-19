@@ -36,6 +36,7 @@ struct LibraryHistoryView: View {
                 .compactSongListRow()
             }
         }
+        .modifier(StatusBarScrollEffect())
         .listStyle(.plain)
         .refreshable {
             await library.refresh(force: true)

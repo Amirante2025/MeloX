@@ -27,6 +27,7 @@ struct LibraryArtistsView: View {
                 .musicMatchedTransitionSource(for: .artist(artist.id))
             }
         }
+        .modifier(StatusBarScrollEffect())
         .listStyle(.plain)
         .refreshable { await library.refresh(force: true) }
         .overlay {

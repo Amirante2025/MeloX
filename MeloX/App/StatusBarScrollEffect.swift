@@ -3,10 +3,21 @@ import UIKit
 
 /// Root pages hide the navigation bar, so they need their own scroll-aware
 /// system material behind the status bar.
+/// Apply directly to the vertical ScrollView or List, not its page container.
 struct StatusBarScrollEffect: ViewModifier {
+    @Environment(\.scrollingPageHeader) private var pageHeader
     @State private var visibility: CGFloat = 0
 
+    @ViewBuilder
     func body(content: Content) -> some View {
+        if pageHeader != nil {
+            scrollingContent(content)
+        } else {
+            content
+        }
+    }
+
+    private func scrollingContent(_ content: Content) -> some View {
         content
             .scrollClipDisabled()
             .onScrollGeometryChange(for: CGFloat.self) { geometry in

@@ -36,6 +36,7 @@ struct LibraryAlbumsView: View {
                 .musicMatchedTransitionSource(for: MusicRoute.album(album))
             }
         }
+        .modifier(StatusBarScrollEffect())
         .listStyle(.plain)
         .refreshable {
             await library.refresh(force: true)

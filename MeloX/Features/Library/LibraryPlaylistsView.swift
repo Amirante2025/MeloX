@@ -69,6 +69,7 @@ struct LibraryPlaylistsView: View {
                 }
             }
         }
+        .modifier(StatusBarScrollEffect())
         .listStyle(.plain)
         .disabled(isDeletingPlaylist)
         .confirmationDialog(

@@ -69,6 +69,7 @@ struct LibrarySongsView: View {
 
             paginationFooter
         }
+        .modifier(StatusBarScrollEffect())
         .listStyle(.plain)
         .refreshable {
             await library.refresh(force: true)

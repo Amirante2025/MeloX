@@ -377,7 +377,6 @@ struct ContentView: View {
                                 \.scrollingPageHeader,
                                 AnyView(pageHeader(for: tab))
                             )
-                            .modifier(StatusBarScrollEffect())
                             .toolbar(.hidden, for: .navigationBar)
                             .navigationDestination(
                                 for: ContentRoute.self

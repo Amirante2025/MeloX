@@ -193,6 +193,7 @@ struct LibraryView: View {
                 content().frame(minHeight: 320)
             }
         }
+        .modifier(StatusBarScrollEffect())
     }
 
     private var pagePicker: some View {

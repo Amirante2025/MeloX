@@ -95,6 +95,7 @@ struct SearchView: View {
                         )
                 }
             }
+            .modifier(StatusBarScrollEffect())
             .listStyle(.plain)
             .listSectionSpacing(0)
             .environment(\.defaultMinListRowHeight, 1)
