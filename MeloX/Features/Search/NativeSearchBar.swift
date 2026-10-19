@@ -73,6 +73,7 @@ struct NativeSearchBar: UIViewRepresentable {
         }
 
         func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+            searchBar.text = ""
             parent.text = ""
             parent.isFocused = false
             parent.onCancel()

@@ -36,10 +36,6 @@ struct SearchView: View {
         case searchContent
     }
 
-    private enum SearchCoordinateSpace: Hashable {
-        case page
-    }
-
     var body: some View {
         ScrollViewReader { proxy in
             ZStack(alignment: .top) {
@@ -135,7 +131,7 @@ struct SearchView: View {
                     .opacity(searchControlsTop == nil ? 0 : 1)
                     .allowsHitTesting(searchControlsTop != nil)
             }
-            .coordinateSpace(name: SearchCoordinateSpace.page)
+            .coordinateSpace(name: "music-search-page")
             .onChange(of: isSearchFocused) { _, focused in
                 guard focused else { return }
                 withAnimation(.easeInOut(duration: 0.25)) {
@@ -239,7 +235,7 @@ struct SearchView: View {
         Color.clear
             .frame(height: searchControlsHeight)
             .onGeometryChange(for: CGFloat.self) { geometry in
-                geometry.frame(in: .named(SearchCoordinateSpace.page)).minY
+                geometry.frame(in: .named("music-search-page")).minY
             } action: { searchControlsTop = max(0, $0) }
             .accessibilityHidden(true)
     }
