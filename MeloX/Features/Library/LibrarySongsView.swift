@@ -12,7 +12,6 @@ struct LibrarySongsView: View {
     @State private var isStartingHeartMode = false
     @State private var heartModeErrorMessage: String?
     @State private var isPreparingPlayback = false
-    @State private var playbackErrorMessage: String?
 
     var body: some View {
         List {
@@ -102,23 +101,6 @@ struct LibrarySongsView: View {
             }
         } message: {
             Text(heartModeErrorMessage ?? L10n.string("ui.error.try_again_later"))
-        }
-        .alert(
-            "ui.library.play_all_failed",
-            isPresented: Binding(
-                get: { playbackErrorMessage != nil },
-                set: { isPresented in
-                    if !isPresented {
-                        playbackErrorMessage = nil
-                    }
-                }
-            )
-        ) {
-            Button("ui.common.ok", role: .cancel) {
-                playbackErrorMessage = nil
-            }
-        } message: {
-            Text(playbackErrorMessage ?? L10n.string("ui.library.complete_song_list_failed"))
         }
     }
 
@@ -279,25 +261,16 @@ struct LibrarySongsView: View {
     private func playDisplayedSongs() {
         guard !isPreparingPlayback else { return }
         isPreparingPlayback = true
-        playbackErrorMessage = nil
-
         Task { @MainActor in
             defer { isPreparingPlayback = false }
-            do {
-                let songs = if isSearching {
-                    displayedSongs
-                } else {
-                    try await library.favoriteSongsForPlayback()
-                }
-                try Task.checkCancellation()
-                await player.playAll(songs)
-            } catch is CancellationError {
-                return
-            } catch {
-                playbackErrorMessage = error.localizedDescription
+            if isSearching {
+                await player.playAll(displayedSongs)
+            } else {
+                await player.playFavorites(library.favoritePlaybackPlan())
             }
         }
     }
+
 }
 
 private struct LibrarySongSearchRequest: Hashable {

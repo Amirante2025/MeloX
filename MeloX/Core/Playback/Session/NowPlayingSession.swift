@@ -121,6 +121,13 @@ final class NowPlayingSession {
         commandCenter.pauseCommand.isEnabled = isPlaying
     }
 
+    func updateQueue(index: Int, count: Int) {
+        guard representedSongID != nil else { return }
+        nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackQueueIndex] = max(index, 0)
+        nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackQueueCount] = max(count, 1)
+        nowPlayingCenter.nowPlayingInfo = nowPlayingInfo
+    }
+
     func clear() {
         representedSongID = nil
         artworkTask?.cancel()

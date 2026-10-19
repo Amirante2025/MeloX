@@ -83,6 +83,19 @@ final class PlayerStore {
 
     private var playbackQueue = PlaybackQueue()
 
+    @ObservationIgnored private let queueExpansion = PlaybackQueueExpansion()
+    @ObservationIgnored private var queueID = UUID()
+
+    var isExpandingQueue: Bool { queueExpansion.isLoading }
+    var queueExpansionError: String? { queueExpansion.failureMessage }
+
+    func retryQueueExpansion() { queueExpansion.retry() }
+
+    private func resetQueueExpansion() {
+        queueID = UUID()
+        queueExpansion.cancel()
+    }
+
     var queue: [Song] { playbackQueue.songs }
     var currentIndex: Int { playbackQueue.currentIndex }
     var isShuffled: Bool { playbackQueue.isShuffled }
@@ -110,7 +123,7 @@ final class PlayerStore {
         autoMixTransitionProgress != nil
     }
     var canPlayNext: Bool {
-        isAutoplayEnabled
+        queueExpansion.isLoading || isAutoplayEnabled
             || (
                 queue.count > 1
                     && playbackQueue.canMove(
@@ -313,6 +326,7 @@ final class PlayerStore {
 
     func beginListenTogetherSession() {
         guard listenTogetherSavedPlaybackOptions == nil else { return }
+        resetQueueExpansion()
         listenTogetherSavedPlaybackOptions =
             ListenTogetherSavedPlaybackOptions(
                 repeatMode: repeatMode,
@@ -374,6 +388,7 @@ final class PlayerStore {
             recordCurrentPlayback()
         }
         if queueChanged {
+            resetQueueExpansion()
             cancelAutoMixPreparation()
             playbackQueue.replace(
                 with: songs,
@@ -443,6 +458,7 @@ final class PlayerStore {
         startAt: TimeInterval = 0
     ) async {
         recordCurrentPlayback()
+        resetQueueExpansion()
         isHeartModeActive = false
         if let songs, !songs.isEmpty {
             let index = songs.firstIndex(where: { $0.id == song.id }) ?? 0
@@ -473,6 +489,18 @@ final class PlayerStore {
         )
     }
 
+    func playFavorites(_ plan: FavoritePlaybackPlan) async {
+        guard !plan.accountCookie.isEmpty,
+              plan.accountCookie == settings.cookie.trimmingCharacters(in: .whitespacesAndNewlines) else { return }
+        await replaceQueueAndPlay(
+            plan.songs,
+            sourceID: nil,
+            activatesHeartMode: false,
+            remainingSongIDs: plan.remainingSongIDs,
+            accountCookie: plan.accountCookie
+        )
+    }
+
     func playHeartMode(
         playlistID: Int,
         seedSongID: Int
@@ -498,14 +526,39 @@ final class PlayerStore {
     private func replaceQueueAndPlay(
         _ songs: [Song],
         sourceID: Int?,
-        activatesHeartMode: Bool
+        activatesHeartMode: Bool,
+        remainingSongIDs: [Int] = [],
+        accountCookie: String? = nil
     ) async {
         guard !songs.isEmpty else { return }
         recordCurrentPlayback()
+        resetQueueExpansion()
         playbackQueue.replace(with: songs, startingAt: 0)
         historySourceID = sourceID
         isHeartModeActive = activatesHeartMode
         hasRecordedCurrentStart = false
+        if !remainingSongIDs.isEmpty, let accountCookie {
+            let queueID = queueID
+            queueExpansion.start(ids: remainingSongIDs) { [weak self] ids in
+                guard let self, self.queueID == queueID,
+                      self.settings.cookie.trimmingCharacters(in: .whitespacesAndNewlines) == accountCookie else {
+                    throw CancellationError()
+                }
+                let songs = try await self.api.songDetails(ids: ids)
+                guard self.queueID == queueID,
+                      self.settings.cookie.trimmingCharacters(in: .whitespacesAndNewlines) == accountCookie else {
+                    throw CancellationError()
+                }
+                return songs
+            } append: { [weak self] songs in
+                guard let self, self.queueID == queueID else { return }
+                var seen = Set(self.queue.map(\.id))
+                self.playbackQueue.append(contentsOf: songs.filter { seen.insert($0.id).inserted })
+                self.nowPlayingSession.updateQueue(index: self.currentIndex, count: self.queue.count)
+                self.persistSnapshot()
+                self.prepareAutoMixIfNeeded()
+            }
+        }
         await loadCurrentSong(autoplay: true)
     }
 
@@ -583,11 +636,17 @@ final class PlayerStore {
 
     private func moveToNext(recordingCurrentPlayback: Bool) async {
         guard !queue.isEmpty else { return }
+        let queueID = queueID
+        while !playbackQueue.canMove(by: 1, wraps: false), queueExpansion.isLoading {
+            await queueExpansion.waitForNextPage()
+            guard self.queueID == queueID else { return }
+        }
         if !playbackQueue.canMove(
             by: 1,
             wraps: repeatMode == .all
         ), isAutoplayEnabled {
             await appendAutoplayRecommendationsIfNeeded()
+            guard self.queueID == queueID else { return }
         }
         if recordingCurrentPlayback {
             recordCurrentPlayback()
@@ -1653,6 +1712,8 @@ final class PlayerStore {
 
     private func appendAutoplayRecommendationsIfNeeded() async {
         guard isAutoplayEnabled,
+              !queueExpansion.isLoading,
+              queueExpansion.failureMessage == nil,
               !isLoadingAutoplayRecommendations,
               playbackQueue.upcomingIndices(wraps: false).isEmpty,
               let currentSong,

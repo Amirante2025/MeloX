@@ -1342,6 +1342,8 @@
 "ui.player.current_song" = "当前歌曲";
 "ui.player.up_next" = "接下来播放";
 "ui.player.queue_empty" = "播放队列为空";
+"ui.player.queue_adding" = "正在添加剩余歌曲";
+"ui.player.queue_add_failed" = "部分歌曲暂未加入队列";
 "ui.player.previous" = "上一首";
 "ui.player.next" = "下一首";
 "ui.player.pause" = "暂停";

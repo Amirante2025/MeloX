@@ -1,6 +1,6 @@
 import Foundation
 
-struct AccountProfile: Decodable, Hashable, Identifiable {
+nonisolated struct AccountProfile: Codable, Hashable, Identifiable {
     let id: Int
     let nickname: String
     let avatarURLString: String?

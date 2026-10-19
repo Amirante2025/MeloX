@@ -87,7 +87,7 @@ struct NowPlayingQueuePage: View {
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
 
-                    if upcomingEntries.isEmpty {
+                    if upcomingEntries.isEmpty && !player.isExpandingQueue && player.queueExpansionError == nil {
                         ContentUnavailableView(
                             "ui.player.no_up_next",
                             systemImage: "list.bullet"
@@ -109,6 +109,24 @@ struct NowPlayingQueuePage: View {
                             NowPlayingQueueRow(entry: entry)
                         }
                         .onMove(perform: moveQueueItems)
+                    }
+
+                    if player.isExpandingQueue {
+                        ProgressView("ui.player.queue_adding")
+                            .tint(.white)
+                            .foregroundStyle(.white.opacity(0.65))
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                    } else if player.queueExpansionError != nil {
+                        HStack {
+                            Text("ui.player.queue_add_failed")
+                                .foregroundStyle(.white.opacity(0.65))
+                            Spacer()
+                            Button("ui.common.retry", action: player.retryQueueExpansion)
+                                .buttonStyle(.borderless)
+                        }
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
                     }
                 } header: {
                     NowPlayingQueueModeControls()

@@ -1342,6 +1342,8 @@
 "ui.player.current_song" = "Current Song";
 "ui.player.up_next" = "Up Next";
 "ui.player.queue_empty" = "Playback Queue Is Empty";
+"ui.player.queue_adding" = "Adding Remaining Songs";
+"ui.player.queue_add_failed" = "Some songs couldn't be added";
 "ui.player.previous" = "Previous";
 "ui.player.next" = "Next";
 "ui.player.pause" = "Pause";
