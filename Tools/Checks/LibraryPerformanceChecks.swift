@@ -129,7 +129,8 @@ enum Failure: Error { case check(String) }
         print("PASS offline refresh preserves visible cached favorites")
 
         let plan = library.favoritePlaybackPlan()
-        try expect(plan.songs.count == 100 && plan.remainingSongIDs == Array(101...350), "Playback plan lost or duplicated IDs")
+        try expect(plan.songs.count == 100 && plan.remainingSongIDs == Array(101...350)
+                   && plan.songIDs == Array(1...350), "Playback plan lost or duplicated complete collection IDs")
         try expect(!api.events.dropFirst(4).contains("songs"), "Playback plan performed a blocking metadata request")
         print("PASS Play All plan returns loaded songs and remaining IDs without network")
 

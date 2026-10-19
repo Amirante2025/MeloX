@@ -70,4 +70,6 @@ struct FavoritePlaybackPlan {
     let songs: [Song]
     let remainingSongIDs: [Int]
     let accountCookie: String
+
+    var songIDs: [Int] { songs.map(\.id) + remainingSongIDs }
 }

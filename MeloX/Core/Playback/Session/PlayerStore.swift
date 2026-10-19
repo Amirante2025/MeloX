@@ -94,6 +94,7 @@ final class PlayerStore {
     private func resetQueueExpansion() {
         queueID = UUID()
         queueExpansion.cancel()
+        playbackQueue.cancelCollectionPlan()
     }
 
     var queue: [Song] { playbackQueue.songs }
@@ -497,7 +498,8 @@ final class PlayerStore {
             sourceID: nil,
             activatesHeartMode: false,
             remainingSongIDs: plan.remainingSongIDs,
-            accountCookie: plan.accountCookie
+            accountCookie: plan.accountCookie,
+            collectionSongIDs: plan.songIDs
         )
     }
 
@@ -528,18 +530,20 @@ final class PlayerStore {
         sourceID: Int?,
         activatesHeartMode: Bool,
         remainingSongIDs: [Int] = [],
-        accountCookie: String? = nil
+        accountCookie: String? = nil,
+        collectionSongIDs: [Int]? = nil
     ) async {
         guard !songs.isEmpty else { return }
         recordCurrentPlayback()
         resetQueueExpansion()
-        playbackQueue.replace(with: songs, startingAt: 0)
+        playbackQueue.replace(with: songs, startingAt: 0, collectionSongIDs: collectionSongIDs)
         historySourceID = sourceID
         isHeartModeActive = activatesHeartMode
         hasRecordedCurrentStart = false
-        if !remainingSongIDs.isEmpty, let accountCookie {
+        let pendingIDs = collectionSongIDs == nil ? remainingSongIDs : playbackQueue.pendingCollectionSongIDs
+        if !pendingIDs.isEmpty, let accountCookie {
             let queueID = queueID
-            queueExpansion.start(ids: remainingSongIDs) { [weak self] ids in
+            queueExpansion.start(ids: pendingIDs, load: { [weak self] ids in
                 guard let self, self.queueID == queueID,
                       self.settings.cookie.trimmingCharacters(in: .whitespacesAndNewlines) == accountCookie else {
                     throw CancellationError()
@@ -550,14 +554,16 @@ final class PlayerStore {
                     throw CancellationError()
                 }
                 return songs
-            } append: { [weak self] songs in
+            }, unavailable: { [weak self] ids in
                 guard let self, self.queueID == queueID else { return }
-                var seen = Set(self.queue.map(\.id))
-                self.playbackQueue.append(contentsOf: songs.filter { seen.insert($0.id).inserted })
+                self.playbackQueue.removeUnavailableCollectionSongs(ids)
+            }, append: { [weak self] songs in
+                guard let self, self.queueID == queueID else { return }
+                self.playbackQueue.resolveCollectionSongs(songs)
                 self.nowPlayingSession.updateQueue(index: self.currentIndex, count: self.queue.count)
                 self.persistSnapshot()
                 self.prepareAutoMixIfNeeded()
-            }
+            })
         }
         await loadCurrentSong(autoplay: true)
     }
@@ -992,6 +998,7 @@ final class PlayerStore {
         guard !isListenTogetherSessionActive else { return }
         cancelAutoMixPreparation()
         playbackQueue.toggleShuffle()
+        queueExpansion.prioritize(playbackQueue.pendingCollectionSongIDs)
         if isShuffled {
             queueModeIndicator = .shuffle
         } else {

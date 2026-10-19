@@ -12,16 +12,19 @@ final class PlaybackQueueExpansion {
     @ObservationIgnored private var remainingIDs: [Int] = []
     @ObservationIgnored private var pageTask: Task<Void, Never>?
     @ObservationIgnored private var load: (@MainActor ([Int]) async throws -> [Song])?
+    @ObservationIgnored private var unavailable: (@MainActor ([Int]) -> Void)?
     @ObservationIgnored private var append: (@MainActor ([Song]) -> Void)?
 
     func start(
         ids: [Int],
         load: @escaping @MainActor ([Int]) async throws -> [Song],
+        unavailable: @escaping @MainActor ([Int]) -> Void = { _ in },
         append: @escaping @MainActor ([Song]) -> Void
     ) {
         cancel()
         remainingIDs = ids
         self.load = load
+        self.unavailable = unavailable
         self.append = append
         loadNextPage()
     }
@@ -32,6 +35,7 @@ final class PlaybackQueueExpansion {
         pageTask = nil
         remainingIDs = []
         load = nil
+        unavailable = nil
         append = nil
         isLoading = false
         failureMessage = nil
@@ -39,6 +43,19 @@ final class PlaybackQueueExpansion {
 
     func retry() {
         guard !isLoading, !remainingIDs.isEmpty else { return }
+        loadNextPage()
+    }
+
+    /// Keep fetching the earliest unresolved slots after a mode/order change.
+    func prioritize(_ ids: [Int]) {
+        guard !ids.isEmpty, !remainingIDs.isEmpty, load != nil else { return }
+        let remaining = Set(remainingIDs)
+        let reordered = ids.filter { remaining.contains($0) }
+        guard reordered != remainingIDs else { return }
+        generation = UUID()
+        pageTask?.cancel()
+        pageTask = nil
+        remainingIDs = reordered
         loadNextPage()
     }
 
@@ -65,6 +82,7 @@ final class PlaybackQueueExpansion {
                 guard let self, self.generation == requestGeneration else { return }
                 let byID = Dictionary(songs.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
                 self.remainingIDs.removeFirst(requestedIDs.count)
+                self.unavailable?(requestedIDs.filter { byID[$0] == nil })
                 self.append?(requestedIDs.compactMap { byID[$0] })
                 self.loadNextPage()
             } catch {

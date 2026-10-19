@@ -41,8 +41,8 @@ struct LibraryDownloadsView: View {
                         Text(downloadManagementValue)
                             .foregroundStyle(.secondary)
                     }
-                    .padding(.bottom, 12)
                 }
+                .padding(.vertical, 6)
                 .listRowSeparator(.hidden, edges: .bottom)
             }
 

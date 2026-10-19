@@ -54,6 +54,25 @@ struct PlaybackQueue {
     private var shuffledOrder: [Int] = []
     private var shuffledPosition = 0
 
+    // Reserve the complete collection order before metadata arrives. Missing
+    // details must not let already-cached songs jump ahead in shuffle mode.
+    private var collectionSongIDs: [Int]?
+    private var collectionShuffleIDs: [Int] = []
+
+    var collectionPlaybackIDs: [Int]? {
+        collectionSongIDs.map { isShuffled ? collectionShuffleIDs : $0 }
+    }
+
+    var pendingCollectionSongIDs: [Int] {
+        let known = Set(songs.map(\.id))
+        return (collectionPlaybackIDs ?? []).filter { !known.contains($0) }
+    }
+
+    mutating func cancelCollectionPlan() {
+        collectionSongIDs = nil
+        collectionShuffleIDs = []
+    }
+
     var currentSong: Song? {
         guard songs.indices.contains(currentIndex) else { return nil }
         return songs[currentIndex]
@@ -65,6 +84,16 @@ struct PlaybackQueue {
 
     func upcomingIndices(wraps: Bool) -> [Int] {
         guard !songs.isEmpty else { return [] }
+        if let order = collectionPlaybackIDs,
+           let id = currentSong?.id,
+           let position = order.firstIndex(of: id) {
+            var remaining = Array(order.dropFirst(position + 1))
+            if wraps, position > 0 {
+                remaining += order.prefix(position)
+            }
+            let indices = Dictionary(uniqueKeysWithValues: songs.enumerated().map { ($0.element.id, $0.offset) })
+            return remaining.prefix { indices[$0] != nil }.compactMap { indices[$0] }
+        }
         let order = isShuffled
             ? shuffledOrder
             : Array(songs.indices)
@@ -83,6 +112,8 @@ struct PlaybackQueue {
         isShuffled: Bool,
         shuffledOrder: [Int]
     ) {
+        collectionSongIDs = nil
+        collectionShuffleIDs = []
         self.songs = songs
         self.currentIndex = songs.isEmpty
             ? 0
@@ -100,11 +131,21 @@ struct PlaybackQueue {
         }
     }
 
-    mutating func replace(with songs: [Song], startingAt index: Int) {
+    mutating func replace(with songs: [Song], startingAt index: Int, collectionSongIDs: [Int]? = nil) {
+        self.collectionSongIDs = nil
+        collectionShuffleIDs = []
         self.songs = songs
         currentIndex = songs.isEmpty ? 0 : min(max(index, 0), songs.count - 1)
+        if let collectionSongIDs,
+           Set(collectionSongIDs).count == collectionSongIDs.count,
+           Set(songs.map(\.id)).count == songs.count,
+           Set(songs.map(\.id)).isSubset(of: Set(collectionSongIDs)) {
+            self.collectionSongIDs = collectionSongIDs
+        }
         if isShuffled {
             rebuildShuffleOrder()
+        } else {
+            alignCollectionIndices()
         }
     }
 
@@ -116,6 +157,12 @@ struct PlaybackQueue {
     }
 
     mutating func move(by offset: Int, wraps: Bool) -> Bool {
+        if collectionSongIDs != nil {
+            guard let index = collectionDestination(by: offset, wraps: wraps) else { return false }
+            currentIndex = index
+            alignShufflePosition()
+            return true
+        }
         let order = isShuffled ? shuffledOrder : Array(songs.indices)
         guard !order.isEmpty else { return false }
         let position = isShuffled ? shuffledPosition : currentIndex
@@ -138,6 +185,9 @@ struct PlaybackQueue {
     }
 
     func canMove(by offset: Int, wraps: Bool) -> Bool {
+        if collectionSongIDs != nil {
+            return collectionDestination(by: offset, wraps: wraps) != nil
+        }
         let order = isShuffled ? shuffledOrder : Array(songs.indices)
         guard !order.isEmpty else { return false }
         let position = isShuffled ? shuffledPosition : currentIndex
@@ -154,14 +204,55 @@ struct PlaybackQueue {
         }
     }
 
+    /// Resolve metadata without generating another shuffle for each batch.
+    mutating func resolveCollectionSongs(_ newSongs: [Song]) {
+        guard let collectionSongIDs else {
+            var known = Set(songs.map(\.id))
+            append(contentsOf: newSongs.filter { known.insert($0.id).inserted })
+            return
+        }
+        let allowed = Set(collectionSongIDs)
+        var known = Set(songs.map(\.id))
+        songs.append(contentsOf: newSongs.filter { allowed.contains($0.id) && known.insert($0.id).inserted })
+        alignCollectionIndices()
+    }
+
+    /// A successful response may omit deleted/unavailable songs. Remove those
+    /// slots so Next can continue, while request failures remain retryable.
+    mutating func removeUnavailableCollectionSongs(_ ids: [Int]) {
+        guard collectionSongIDs != nil else { return }
+        let known = Set(songs.map(\.id))
+        let unavailable = Set(ids).subtracting(known)
+        collectionSongIDs?.removeAll { unavailable.contains($0) }
+        collectionShuffleIDs.removeAll { unavailable.contains($0) }
+        alignCollectionIndices()
+    }
+
     mutating func append(_ song: Song) {
         append(contentsOf: [song])
     }
 
     mutating func append(contentsOf newSongs: [Song]) {
         guard !newSongs.isEmpty else { return }
+        if collectionSongIDs != nil {
+            let existing = Set(collectionSongIDs ?? [])
+            let ids = newSongs.map(\.id)
+            if Set(ids).count == ids.count, existing.isDisjoint(with: ids) {
+                collectionSongIDs?.append(contentsOf: ids)
+                collectionShuffleIDs.append(contentsOf: ids)
+            } else {
+                // Explicit duplicate queue entries retain the ordinary queue's
+                // occurrence-based semantics rather than an ID-only plan.
+                collectionSongIDs = nil
+                collectionShuffleIDs = []
+            }
+        }
         let firstNewIndex = songs.count
         songs.append(contentsOf: newSongs)
+        if collectionSongIDs != nil {
+            alignCollectionIndices()
+            return
+        }
         guard isShuffled else { return }
 
         let newIndices = Array(firstNewIndex..<songs.count).shuffled()
@@ -174,8 +265,26 @@ struct PlaybackQueue {
             return
         }
 
+        if let order = collectionSongIDs, let currentID = currentSong?.id {
+            if order.contains(song.id) {
+                collectionSongIDs = nil
+                collectionShuffleIDs = []
+            } else {
+                let position = order.firstIndex(of: currentID) ?? (order.count - 1)
+                collectionSongIDs?.insert(song.id, at: position + 1)
+                if let shuffledPosition = collectionShuffleIDs.firstIndex(of: currentID) {
+                    collectionShuffleIDs.insert(song.id, at: shuffledPosition + 1)
+                }
+            }
+        }
+
         let insertionIndex = min(currentIndex + 1, songs.endIndex)
         songs.insert(song, at: insertionIndex)
+
+        if collectionSongIDs != nil {
+            alignCollectionIndices()
+            return
+        }
 
         guard isShuffled else { return }
 
@@ -197,6 +306,25 @@ struct PlaybackQueue {
         toOffset destination: Int,
         wraps: Bool
     ) {
+        if var order = collectionPlaybackIDs,
+           let id = currentSong?.id,
+           let position = order.firstIndex(of: id) {
+            var positions = Array(order.indices.dropFirst(position + 1))
+            if wraps, position > 0 {
+                positions += order.indices.prefix(position)
+            }
+            let known = Set(songs.map(\.id))
+            positions = Array(positions.prefix { known.contains(order[$0]) })
+            let ids = moved(positions.map { order[$0] }, fromOffsets: source, toOffset: destination)
+            for (position, songID) in zip(positions, ids) { order[position] = songID }
+            if isShuffled {
+                collectionShuffleIDs = order
+            } else {
+                collectionSongIDs = order
+            }
+            alignCollectionIndices()
+            return
+        }
         if isShuffled {
             var positions = Array(
                 shuffledOrder.indices.dropFirst(
@@ -250,6 +378,12 @@ struct PlaybackQueue {
             shuffledPosition = 0
             return
         }
+        if let collectionSongIDs {
+            let id = songs[currentIndex].id
+            collectionShuffleIDs = [id] + collectionSongIDs.filter { $0 != id }.shuffled()
+            alignCollectionIndices()
+            return
+        }
         shuffledOrder = [currentIndex] + songs.indices.filter { $0 != currentIndex }.shuffled()
         shuffledPosition = 0
     }
@@ -265,6 +399,31 @@ struct PlaybackQueue {
 
     private func isValidShuffleOrder(_ order: [Int]) -> Bool {
         order.count == songs.count && Set(order) == Set(songs.indices)
+    }
+
+    private func collectionDestination(by offset: Int, wraps: Bool) -> Int? {
+        guard let order = collectionPlaybackIDs,
+              let id = currentSong?.id,
+              let position = order.firstIndex(of: id) else { return nil }
+        var destination = position + offset
+        if !order.indices.contains(destination) {
+            guard wraps, !order.isEmpty else { return nil }
+            destination = offset > 0 ? 0 : order.count - 1
+        }
+        return songs.firstIndex { $0.id == order[destination] }
+    }
+
+    private mutating func alignCollectionIndices() {
+        guard let order = collectionSongIDs else { return }
+        let currentID = currentSong?.id
+        let positions = Dictionary(uniqueKeysWithValues: order.enumerated().map { ($0.element, $0.offset) })
+        songs.sort { positions[$0.id, default: order.count] < positions[$1.id, default: order.count] }
+        currentIndex = currentID.flatMap { id in songs.firstIndex { $0.id == id } } ?? 0
+        if isShuffled {
+            let indices = Dictionary(uniqueKeysWithValues: songs.enumerated().map { ($0.element.id, $0.offset) })
+            shuffledOrder = collectionShuffleIDs.compactMap { indices[$0] }
+            shuffledPosition = shuffledOrder.firstIndex(of: currentIndex) ?? 0
+        }
     }
 
     private func moved<Element>(

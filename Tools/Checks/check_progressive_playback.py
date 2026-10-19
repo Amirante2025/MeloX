@@ -12,7 +12,7 @@ source = (repo / 'MeloX/Core/Playback/Session/PlayerStore.swift').read_text()
 names = ['loadCurrentSong', 'handlePlaybackClockSample', 'estimatedProgress',
          'clampedPlaybackPosition', 'reanchorPlaybackTimeline', 'next',
          'moveToNext', 'previous', 'playFromQueue', 'play', 'seek', 'stopAtQueueEnd',
-         'resetQueueExpansion', 'playFavorites', 'replaceQueueAndPlay']
+         'resetQueueExpansion', 'playFavorites', 'replaceQueueAndPlay', 'toggleShuffle']
 methods = []
 for name in names:
     match = re.search(r'^    (?:private )?func ' + name + r'\(', source, re.M)
@@ -31,12 +31,17 @@ struct PlaybackSource { let id: Int; var quality: String? { nil } }
 enum L10n { static func string(_ value: String) -> String { value } }
 struct PlaybackIssue { init(song: Song, error: Error) {} }
 struct Settings { var previousRestartsCurrentSong = false; var cookie = "test-account" }
-struct FavoritePlaybackPlan { let songs: [Song]; let remainingSongIDs: [Int]; let accountCookie: String }
+struct FavoritePlaybackPlan {
+    let songs: [Song]; let remainingSongIDs: [Int]; let accountCookie: String
+    var songIDs: [Int] { songs.map(\.id) + remainingSongIDs }
+}
 
 @MainActor final class API {
     var holdDetails = false
+    var detailRequests: [[Int]] = []
     var pendingDetails: [Int: CheckedContinuation<[Song], Error>] = [:]
     func songDetails(ids: [Int]) async throws -> [Song] {
+        detailRequests.append(ids)
         if holdDetails {
             return try await withCheckedThrowingContinuation { pendingDetails[ids[0]] = $0 }
         }
@@ -104,6 +109,9 @@ struct FavoritePlaybackPlan { let songs: [Song]; let remainingSongIDs: [Int]; le
     var queueID = UUID()
     var queue: [Song] { playbackQueue.songs }
     var currentIndex: Int { playbackQueue.currentIndex }
+    var isShuffled: Bool { playbackQueue.isShuffled }
+    var isListenTogetherSessionActive = false
+    var queueModeIndicator: QueuePlaybackModeIndicator?
     var currentSong: Song?
     var duration = 0.0
     var progress = 0.0
@@ -146,6 +154,7 @@ struct FavoritePlaybackPlan { let songs: [Song]; let remainingSongIDs: [Int]; le
         engine.onClock = { [weak self] sample in self?.handlePlaybackClockSample(sample) }
     }
     func cancelAutoMixPreparation() {}
+    func updateQueueModeIndicator() {}
     func resolveCurrentSongAudioAvailability(for song: Song, generation: Int) {}
     func resetBeatAnalysis() {}
     func updateNowPlayingState(forceNowPlayingLyrics: Bool = false, forceLyricsLiveActivity: Bool = false) {}
@@ -165,6 +174,23 @@ enum CheckError: Error { case failed(String) }
 @main struct Checks {
     @MainActor static func expect(_ value: @autoclosure () -> Bool, _ message: String) throws {
         guard value() else { throw CheckError.failed(message) }
+    }
+    @MainActor static func until(_ condition: () -> Bool) async throws {
+        for _ in 0..<20_000 {
+            if condition() { return }
+            await Task.yield()
+        }
+        throw CheckError.failed("Timed out waiting for controlled request")
+    }
+    @MainActor static func finishDetails(_ player: Fixture) async throws {
+        while player.queueExpansion.isLoading {
+            try await until { !player.api.pendingDetails.isEmpty || !player.queueExpansion.isLoading }
+            if !player.queueExpansion.isLoading { break }
+            let requestCount = player.api.detailRequests.count
+            let request = player.api.detailRequests.last!
+            player.api.completeDetails(request[0], ids: Array(request.reversed()))
+            try await until { player.api.detailRequests.count > requestCount || !player.queueExpansion.isLoading }
+        }
     }
     @MainActor static func waitForSource(_ id: Int, in fixture: Fixture) async throws {
         for _ in 0..<1000 {
@@ -297,7 +323,120 @@ enum CheckError: Error { case failed(String) }
         await pendingSkip.value
         try expect(invalidated.currentSong?.id == 99 && invalidated.queue.map(\.id) == [99], "A waiting skip advanced another queue")
         print("PASS pending boundary skip cannot advance a newly selected collection")
-        print("12 track-switch and progressive-playback checks passed")
+        let shuffled = Fixture()
+        shuffled.api.holdDetails = true
+        shuffled.toggleShuffle()
+        await shuffled.playFavorites(FavoritePlaybackPlan(songs: initial, remainingSongIDs: Array(101...350), accountCookie: "test-account"))
+        let planned = shuffled.playbackQueue.collectionPlaybackIDs!
+        let expectedRequests = planned.filter { $0 > 100 }
+        try expect(planned.first == 1 && Set(planned) == Set(1...350) && planned.count == 350,
+                   "Shuffle did not reserve the complete collection or changed the existing first song")
+        try await until { !shuffled.api.detailRequests.isEmpty }
+        try expect(shuffled.api.detailRequests[0] == Array(expectedRequests.prefix(100)),
+                   "Metadata requests followed collection pages instead of the complete shuffle plan")
+        try expect(shuffled.playbackQueue.upcomingIndices(wraps: false).map { shuffled.queue[$0].id }
+                   == Array(planned.dropFirst().prefix { $0 <= 100 }),
+                   "Cached songs jumped ahead of unresolved shuffle slots")
+        try expect(shuffled.currentSong?.id == 1 && shuffled.engine.loaded.count == 1,
+                   "Global shuffle waited for all metadata before starting cached audio")
+        try await finishDetails(shuffled)
+        try expect(shuffled.queue.map(\.id) == Array(1...350)
+                   && shuffled.playbackQueue.persistedShuffleOrder.map { shuffled.queue[$0].id } == planned
+                   && shuffled.engine.loaded.count == 1 && shuffled.progress == 0,
+                   "Batch completion reshuffled groups, reordered the canonical collection, or restarted audio")
+        var heard = [shuffled.currentSong!.id]
+        for _ in 1..<planned.count { await shuffled.next(); heard.append(shuffled.currentSong!.id) }
+        try expect(heard == planned && Set(heard).count == 350,
+                   "Actual playback diverged from the full shuffle plan, repeated or skipped songs")
+        print("PASS complete collection shuffled once; cached audio starts immediately; all 350 actual skips follow the same plan")
+
+        var gap = PlaybackQueue()
+        gap.toggleShuffle()
+        gap.replace(with: initial, startingAt: 0, collectionSongIDs: Array(1...350))
+        let gapPlan = gap.collectionPlaybackIDs!
+        let prefix = gapPlan.prefix { $0 <= 100 }
+        let beforeGap = prefix.last!
+        let nextMissing = gapPlan[prefix.count]
+        _ = gap.select(index: gap.songs.firstIndex { $0.id == beforeGap }!)
+        try expect(!gap.canMove(by: 1, wraps: true), "Next bypassed a reserved song to use another cached song")
+        gap.resolveCollectionSongs([Song(id: nextMissing, durationMS: 240_000)])
+        try expect(gap.canMove(by: 1, wraps: false) && gap.move(by: 1, wraps: false) && gap.currentSong?.id == nextMissing,
+                   "Resolved next shuffle slot was not the next actual song")
+        gap.resolveCollectionSongs((101...350).reversed().map { Song(id: $0, durationMS: 240_000) })
+        try expect(gap.currentSong?.id == nextMissing && gap.collectionPlaybackIDs == gapPlan
+                   && Set(gap.persistedShuffleOrder) == Set(gap.songs.indices),
+                   "Later metadata changed the active song or invalidated persisted shuffle indices")
+        gap.toggleShuffle()
+        try expect(gap.currentSong?.id == nextMissing && gap.collectionPlaybackIDs == Array(1...350),
+                   "Turning shuffle off lost the active song or original collection order")
+        print("PASS unresolved slots block skipping; metadata preserves current song and canonical order")
+
+        let reprioritized = Fixture()
+        reprioritized.api.holdDetails = true
+        await reprioritized.playFavorites(FavoritePlaybackPlan(songs: initial, remainingSongIDs: Array(101...350), accountCookie: "test-account"))
+        try await until { reprioritized.api.pendingDetails[101] != nil }
+        let obsolete = reprioritized.api.pendingDetails.removeValue(forKey: 101)!
+        reprioritized.toggleShuffle()
+        let replacementPlan = reprioritized.playbackQueue.collectionPlaybackIDs!
+        let replacementIDs = replacementPlan.filter { $0 > 100 }
+        try await until { reprioritized.api.detailRequests.count == 2 }
+        try expect(reprioritized.api.detailRequests[1] == Array(replacementIDs.prefix(100)),
+                   "Mode change did not prioritize the earliest unresolved shuffle slots")
+        obsolete.resume(returning: (101...200).map { Song(id: $0, durationMS: 240_000) })
+        for _ in 0..<20 { await Task.yield() }
+        try expect(reprioritized.queue.count == 100 && reprioritized.currentSong?.id == 1,
+                   "Cancelled metadata response changed the queue")
+        try await finishDetails(reprioritized)
+        try expect(reprioritized.playbackQueue.persistedShuffleOrder.map { reprioritized.queue[$0].id } == replacementPlan
+                   && reprioritized.engine.loaded.count == 1,
+                   "Reprioritization changed the planned order or restarted the current audio")
+        print("PASS changing mode reprioritizes pending metadata and discards the cancelled page")
+
+        let unavailable = Fixture()
+        unavailable.api.holdDetails = true
+        await unavailable.playFavorites(FavoritePlaybackPlan(songs: [unavailable.queue[0]], remainingSongIDs: [2, 3, 4], accountCookie: "test-account"))
+        try await until { unavailable.api.pendingDetails[2] != nil }
+        unavailable.api.completeDetails(2, ids: [4, 3])
+        try await until { !unavailable.queueExpansion.isLoading }
+        try expect(unavailable.playbackQueue.collectionPlaybackIDs == [1, 3, 4],
+                   "Successful response with an unavailable song left a blocking slot")
+        await unavailable.next()
+        try expect(unavailable.currentSong?.id == 3 && unavailable.progress == 0,
+                   "Unavailable metadata stopped playback before later available songs")
+        print("PASS unavailable songs do not leave permanent holes in the reserved order")
+
+        var edited = PlaybackQueue()
+        edited.replace(with: (1...4).map { Song(id: $0, durationMS: 240_000) }, startingAt: 0, collectionSongIDs: Array(1...8))
+        edited.moveUpcomingSongs(fromOffsets: IndexSet(integer: 1), toOffset: 0, wraps: false)
+        edited.insertNext(Song(id: 99, durationMS: 240_000))
+        edited.append(Song(id: 100, durationMS: 240_000))
+        edited.resolveCollectionSongs((5...8).map { Song(id: $0, durationMS: 240_000) })
+        try expect(edited.collectionPlaybackIDs == [1, 99, 3, 2, 4, 5, 6, 7, 8, 100]
+                   && edited.upcomingIndices(wraps: false).map { edited.songs[$0].id } == [99, 3, 2, 4, 5, 6, 7, 8, 100],
+                   "Background resolution overwrote manual next, append or drag order")
+        edited.toggleShuffle()
+        edited.append(Song(id: 1, durationMS: 240_000))
+        try expect(edited.songs.filter { $0.id == 1 }.count == 2
+                   && Set(edited.persistedShuffleOrder) == Set(edited.songs.indices),
+                   "Explicit duplicate queue entries lost occurrence-based shuffle semantics")
+        print("PASS manual queue edits survive metadata fill and explicit duplicate entries remain valid")
+        let reselected = Fixture()
+        reselected.api.holdDetails = true
+        reselected.toggleShuffle()
+        await reselected.playFavorites(FavoritePlaybackPlan(songs: initial, remainingSongIDs: Array(101...350), accountCookie: "test-account"))
+        try await until { !reselected.api.pendingDetails.isEmpty }
+        let abandoned = reselected.api.detailRequests[0]
+        await reselected.play(initial[0])
+        try expect(!reselected.queueExpansion.isLoading && reselected.playbackQueue.collectionPlaybackIDs == nil
+                   && reselected.playbackQueue.canMove(by: 1, wraps: false),
+                   "Cancelling expansion kept unresolved slots in a reused queue")
+        await reselected.next()
+        reselected.api.completeDetails(abandoned[0], ids: abandoned)
+        for _ in 0..<20 { await Task.yield() }
+        try expect(reselected.queue.count == 100 && reselected.currentSong?.id != 1 && reselected.progress == 0,
+                   "Reselecting a cached song stalled at a cancelled slot or accepted stale metadata")
+        print("PASS reselecting a cached song cancels unresolved slots and keeps the remaining queue usable")
+        print("18 track-switch, progressive-playback and global-shuffle checks passed")
     }
 }
 '''
