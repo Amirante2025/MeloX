@@ -373,9 +373,18 @@ struct ContentView: View {
                         path: navigationPathBinding(for: tab)
                     ) {
                         tabRoot(for: tab)
+                            .ignoresSafeArea(.container, edges: .top)
                             .environment(
                                 \.scrollingPageHeader,
                                 AnyView(pageHeader(for: tab))
+                            )
+                            .environment(
+                                \.isStatusBarRootActive,
+                                tab == selectedTab
+                                    && (navigationPaths[tab]?.count ?? 0) == 0
+                                    && playerPresentation == nil
+                                    && presentedSheet == nil
+                                    && neteaseSharePresentation == nil
                             )
                             .toolbar(.hidden, for: .navigationBar)
                             .navigationDestination(

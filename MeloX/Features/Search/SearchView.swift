@@ -8,7 +8,11 @@ struct SearchView: View {
     @Environment(AppSettings.self) private var settings
 
     @State private var query = ""
+    @State private var submittedQuery = ""
+    @State private var searchSubmissionID = 0
     @State private var isSearchFocused = false
+    @State private var searchControlsTop: CGFloat?
+    @State private var searchControlsHeight: CGFloat = 48
     @State private var viewportHeight: CGFloat = 0
     @State private var suggestions: [String] = []
     @State private var resultCache = SearchResultCache()
@@ -32,82 +36,106 @@ struct SearchView: View {
         case searchContent
     }
 
+    private enum SearchCoordinateSpace: Hashable {
+        case page
+    }
+
     var body: some View {
         ScrollViewReader { proxy in
-            List {
-                if pageHeader != nil {
-                    ScrollingPageListHeader()
-                }
-
-                Section {
-                    Color.clear
-                        .frame(height: 1)
-                        .listRowInsets(EdgeInsets())
-                        .listRowSeparator(.hidden)
-                        .accessibilityHidden(true)
-                        .id(ScrollAnchor.searchContent)
-
-                    if isSearchFocused, settings.searchSuggestionsEnabled {
-                        ForEach(suggestions, id: \.self) { suggestion in
-                            Button {
-                                query = suggestion
-                                isSearchFocused = false
-                            } label: {
-                                Label {
-                                    Text(verbatim: suggestion)
-                                } icon: {
-                                    Image(systemName: "magnifyingglass")
-                                }
-                            }
-                            .buttonStyle(.plain)
-                        }
+            ZStack(alignment: .top) {
+                List {
+                    if pageHeader != nil {
+                        ScrollingPageListHeader()
                     }
 
-                    if trimmedQuery.isEmpty {
-                        SearchDiscoveryView(
-                            recommendations: discoveryRecommendations,
-                            phase: discoveryPhase,
-                            onRetry: {
-                                Task { await loadDiscoveryRecommendations() }
-                            }
-                        )
-                        .listRowInsets(EdgeInsets())
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-                    } else if let recognizedLink {
-                        linkResult(for: recognizedLink)
-                    } else {
-                        searchResults
-                    }
-
-                    if !trimmedQuery.isEmpty {
+                    Section {
                         Color.clear
-                            .frame(height: minimumResultsSpacer)
+                            .frame(height: 1)
                             .listRowInsets(EdgeInsets())
                             .listRowSeparator(.hidden)
                             .accessibilityHidden(true)
+                            .id(ScrollAnchor.searchContent)
+
+                        if isSearchFocused, settings.searchSuggestionsEnabled {
+                            ForEach(suggestions, id: \.self) { suggestion in
+                                Button {
+                                    submitSearch(suggestion)
+                                } label: {
+                                    Label {
+                                        Text(verbatim: suggestion)
+                                    } icon: {
+                                        Image(systemName: "magnifyingglass")
+                                    }
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+
+                        if showsSearchResults {
+                            if let recognizedLink {
+                                linkResult(for: recognizedLink)
+                            } else {
+                                searchResults
+                            }
+                        } else if trimmedQuery.isEmpty || !isSearchFocused {
+                            SearchDiscoveryView(
+                                recommendations: discoveryRecommendations,
+                                phase: discoveryPhase,
+                                onRetry: {
+                                    Task { await loadDiscoveryRecommendations() }
+                                }
+                            )
+                            .listRowInsets(EdgeInsets())
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                        }
+
+                        if isSearchFocused || showsSearchResults {
+                            Color.clear
+                                .frame(height: minimumResultsSpacer)
+                                .listRowInsets(EdgeInsets())
+                                .listRowSeparator(.hidden)
+                                .accessibilityHidden(true)
+                        }
+                    } header: {
+                        searchControlsPlaceholder
+                            .textCase(nil)
+                            .listRowInsets(
+                                EdgeInsets(top: 0, leading: 12, bottom: 8, trailing: 12)
+                            )
                     }
-                } header: {
-                    searchControls
-                        .textCase(nil)
-                        .listRowInsets(
-                            EdgeInsets(top: 0, leading: 12, bottom: 8, trailing: 12)
+                }
+                .modifier(StatusBarScrollEffect())
+                .listStyle(.plain)
+                .listSectionSpacing(0)
+                .environment(\.defaultMinListRowHeight, 1)
+                .scrollDismissesKeyboard(.interactively)
+                .onGeometryChange(for: CGFloat.self) { geometry in
+                    geometry.size.height
+                } action: { viewportHeight = $0 }
+                .refreshable {
+                    if !showsSearchResults {
+                        await loadDiscoveryRecommendations()
+                    }
+                }
+
+                // Keep the UIKit input outside reusable List headers. Result
+                // and suggestion updates must not recreate the first responder.
+                searchControls
+                    .padding(.horizontal, 12)
+                    .onGeometryChange(for: CGFloat.self) { geometry in
+                        geometry.size.height
+                    } action: { searchControlsHeight = $0 }
+                    .offset(
+                        y: max(
+                            pageHeader == nil ? 0 : RootPageSafeArea.topInset,
+                            searchControlsTop ?? 0
                         )
-                }
+                    )
+                    .opacity(searchControlsTop == nil ? 0 : 1)
+                    .allowsHitTesting(searchControlsTop != nil)
             }
-            .modifier(StatusBarScrollEffect())
-            .listStyle(.plain)
-            .listSectionSpacing(0)
-            .environment(\.defaultMinListRowHeight, 1)
-            .scrollDismissesKeyboard(.interactively)
-            .onGeometryChange(for: CGFloat.self) { geometry in
-                geometry.size.height
-            } action: { viewportHeight = $0 }
-            .refreshable {
-                if trimmedQuery.isEmpty {
-                    await loadDiscoveryRecommendations()
-                }
-            }
+            .coordinateSpace(name: SearchCoordinateSpace.page)
             .onChange(of: isSearchFocused) { _, focused in
                 guard focused else { return }
                 withAnimation(.easeInOut(duration: 0.25)) {
@@ -124,7 +152,7 @@ struct SearchView: View {
             await loadSuggestions()
         }
         .overlay {
-            if !trimmedQuery.isEmpty, case .failed(let message) = phase {
+            if showsSearchResults, case .failed(let message) = phase {
                 ContentUnavailableView(
                     recognizedLink == nil
                         ? L10n.string("ui.search.failed")
@@ -136,10 +164,10 @@ struct SearchView: View {
                 )
                 .allowsHitTesting(false)
             } else if recognizedLink == nil,
-                      !trimmedQuery.isEmpty,
+                      showsSearchResults,
                       phase == .loaded,
                       resultIsEmpty {
-                ContentUnavailableView.search(text: query)
+                ContentUnavailableView.search(text: submittedQuery)
                     .allowsHitTesting(false)
             }
         }
@@ -163,10 +191,15 @@ struct SearchView: View {
         } message: {
             Text(library.errorMessage ?? L10n.string("ui.common.unknown_error"))
         }
-        .task(id: SearchRequest(query: query, kind: scope)) {
-            let request = SearchRequest(query: query, kind: scope)
+        .task(id: searchRequest) {
+            let request = searchRequest
             guard completedRequest != request else { return }
             await search(request)
+        }
+        .onChange(of: query) { _, value in
+            if value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                submittedQuery = ""
+            }
         }
         .onChange(
             of: settings.isContentFeatureEnabled(.podcasts)
@@ -179,12 +212,17 @@ struct SearchView: View {
 
     private var searchControls: some View {
         VStack(spacing: 8) {
-            NativeSearchBar(text: $query, isFocused: $isSearchFocused)
-                .frame(maxWidth: .infinity)
-                .frame(height: 56)
-                .padding(.top, -8)
+            NativeSearchBar(
+                text: $query,
+                isFocused: $isSearchFocused,
+                onSubmit: { submitSearch() },
+                onCancel: cancelSearch
+            )
+            .frame(maxWidth: .infinity)
+            .frame(height: 56)
+            .padding(.top, -8)
 
-            if !trimmedQuery.isEmpty {
+            if showsSearchResults {
                 Picker("ui.navigation.search", selection: $scope) {
                     ForEach(availableSearchKinds) { kind in
                         Text(kind.title).tag(kind)
@@ -197,11 +235,52 @@ struct SearchView: View {
         .frame(maxWidth: .infinity)
     }
 
+    private var searchControlsPlaceholder: some View {
+        Color.clear
+            .frame(height: searchControlsHeight)
+            .onGeometryChange(for: CGFloat.self) { geometry in
+                geometry.frame(in: .named(SearchCoordinateSpace.page)).minY
+            } action: { searchControlsTop = max(0, $0) }
+            .accessibilityHidden(true)
+    }
+
+    private var showsSearchResults: Bool {
+        !isSearchFocused && !submittedQuery.isEmpty && submittedQuery == trimmedQuery
+    }
+
+    private var searchRequest: SearchRequest {
+        SearchRequest(
+            query: submittedQuery,
+            kind: scope,
+            submissionID: searchSubmissionID
+        )
+    }
+
+    private func submitSearch(_ suggestion: String? = nil) {
+        let keywords = (suggestion ?? query)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !keywords.isEmpty else { return }
+        query = keywords
+        submittedQuery = keywords
+        searchSubmissionID += 1
+        suggestions = []
+        isSearchFocused = false
+    }
+
+    private func cancelSearch() {
+        query = ""
+        submittedQuery = ""
+        suggestions = []
+        isSearchFocused = false
+    }
+
     // Short result sets still need enough scrollable space for the title to
     // leave the screen without pushing the focused search field back down.
     private var minimumResultsSpacer: CGFloat {
         let resultCount: Int
-        if recognizedLink != nil {
+        if isSearchFocused {
+            resultCount = 0
+        } else if recognizedLink != nil {
             resultCount = linkedSong == nil ? 0 : 1
         } else {
             switch scope {
@@ -494,6 +573,7 @@ struct SearchView: View {
 private struct SearchRequest: Hashable {
     let query: String
     let kind: SearchKind
+    let submissionID: Int
 }
 
 private struct SearchMediaRow: View {

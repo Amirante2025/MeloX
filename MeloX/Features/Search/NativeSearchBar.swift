@@ -4,6 +4,8 @@ import UIKit
 struct NativeSearchBar: UIViewRepresentable {
     @Binding var text: String
     @Binding var isFocused: Bool
+    let onSubmit: () -> Void
+    let onCancel: () -> Void
 
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
@@ -26,13 +28,16 @@ struct NativeSearchBar: UIViewRepresentable {
     func updateUIView(_ searchBar: UISearchBar, context: Context) {
         context.coordinator.parent = self
         searchBar.placeholder = L10n.string("ui.search.prompt")
-        if searchBar.text != text {
+        if searchBar.text != text, searchBar.searchTextField.markedTextRange == nil {
             searchBar.text = text
         }
         if searchBar.showsCancelButton != isFocused {
             searchBar.setShowsCancelButton(isFocused, animated: true)
         }
-        if !isFocused, searchBar.searchTextField.isFirstResponder {
+        if isFocused, searchBar.window != nil,
+           !searchBar.searchTextField.isFirstResponder {
+            searchBar.becomeFirstResponder()
+        } else if !isFocused, searchBar.searchTextField.isFirstResponder {
             searchBar.resignFirstResponder()
         }
     }
@@ -61,14 +66,17 @@ struct NativeSearchBar: UIViewRepresentable {
         }
 
         func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-            searchBar.resignFirstResponder()
+            parent.text = searchBar.text ?? ""
             parent.isFocused = false
+            parent.onSubmit()
+            searchBar.resignFirstResponder()
         }
 
         func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-            searchBar.resignFirstResponder()
             parent.text = ""
             parent.isFocused = false
+            parent.onCancel()
+            searchBar.resignFirstResponder()
         }
     }
 }
