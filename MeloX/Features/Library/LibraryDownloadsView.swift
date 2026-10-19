@@ -13,6 +13,22 @@ struct LibraryDownloadsView: View {
                 ScrollingPageListHeader()
             }
 
+            if !filteredDownloadedSongs.isEmpty {
+                Button {
+                    Task { await player.playAll(filteredDownloadedSongs) }
+                } label: {
+                    HStack {
+                        Label(
+                            isSearching
+                                ? L10n.string("ui.common.play_search_results")
+                                : L10n.string("ui.common.play_all"),
+                            systemImage: "play.fill"
+                        )
+                        Spacer()
+                    }
+                }
+            }
+
             if !isSearching {
                 NavigationLink {
                     DownloadsView()
@@ -25,7 +41,9 @@ struct LibraryDownloadsView: View {
                         Text(downloadManagementValue)
                             .foregroundStyle(.secondary)
                     }
+                    .padding(.bottom, 12)
                 }
+                .listRowSeparator(.hidden, edges: .bottom)
             }
 
             if !activeDownloadSongs.isEmpty {
@@ -43,19 +61,6 @@ struct LibraryDownloadsView: View {
                 }
             }
 
-            if !filteredDownloadedSongs.isEmpty {
-                Button {
-                    Task { await player.playAll(filteredDownloadedSongs) }
-                } label: {
-                    Label(
-                        isSearching
-                            ? L10n.string("ui.common.play_search_results")
-                            : L10n.string("ui.common.play_all"),
-                        systemImage: "play.fill"
-                    )
-                }
-            }
-
             ForEach(filteredDownloads) { download in
                 Button {
                     Task {
@@ -69,6 +74,11 @@ struct LibraryDownloadsView: View {
                 }
                 .buttonStyle(.plain)
                 .compactSongListRow()
+                .listRowSeparator(
+                    !isSearching && activeDownloadSongs.isEmpty
+                        && download.id == filteredDownloads.first?.id ? .hidden : .automatic,
+                    edges: .top
+                )
                 .swipeActions {
                     Button(role: .destructive) {
                         downloads.remove(songID: download.id)

@@ -1011,6 +1011,10 @@ final class PlayerStore {
         cancelAutoMixPreparation()
         loadGeneration += 1
         let generation = loadGeneration
+        // Unloading pauses the old deck and can publish its final clock sample.
+        // Detach it before initializing the new song's playback timeline.
+        isResolvingSource = true
+        engine.unload()
         currentSong = song
         let cachedDetailedSong = detailedPlaybackSongs[song.id]
         resolveCurrentSongAudioAvailability(
@@ -1025,7 +1029,6 @@ final class PlayerStore {
             to: playbackStartPosition,
             rate: 0
         )
-        isResolvingSource = true
         isLoading = true
         isPlaying = false
         isUsingDownloadedSource = false
@@ -1038,7 +1041,6 @@ final class PlayerStore {
             nowPlayingLyrics = []
             publishedNowPlayingLyricID = nil
         }
-        engine.unload()
         nowPlayingSession.setSong(
             song,
             duration: duration,
@@ -1213,6 +1215,7 @@ final class PlayerStore {
     private func handlePlaybackClockSample(
         _ sample: AudioPlaybackClockSample
     ) {
+        guard !isResolvingSource else { return }
         let measuredProgress = clampedPlaybackPosition(
             sample.position
         )
