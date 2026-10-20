@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct MiniPlayerView: View {
     @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
@@ -27,10 +28,7 @@ struct MiniPlayerView: View {
                                 .lineLimit(1)
 
                             if !isInline {
-                                Text(song.artistText)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
+                                MiniPlayerArtistLabel(text: song.artistText)
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -120,5 +118,38 @@ struct MiniPlayerView: View {
                     Task { await player.previous() }
                 }
             }
+    }
+}
+
+private struct MiniPlayerArtistLabel: View {
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
+
+    let text: String
+
+    var body: some View {
+        Text(text)
+            .font(.caption)
+            .foregroundStyle(textColor)
+            .lineLimit(1)
+            .contentTransition(.identity)
+            .transition(.identity)
+            .transaction { transaction in
+                transaction.animation = nil
+                transaction.disablesAnimations = true
+            }
+    }
+
+    private var textColor: Color {
+        let style: UIUserInterfaceStyle = colorScheme == .dark ? .dark : .light
+        let contrast: UIAccessibilityContrast = colorSchemeContrast == .increased ? .high : .normal
+        let traits = UITraitCollection { traits in
+            traits.userInterfaceStyle = style
+            traits.accessibilityContrast = contrast
+        }
+        // Capture a concrete system label color, bypassing the accessory's
+        // hierarchical foreground-style resolution during the zoom return.
+        let resolved = UIColor.secondaryLabel.resolvedColor(with: traits)
+        return Color(cgColor: resolved.cgColor)
     }
 }
