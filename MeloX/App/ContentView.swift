@@ -34,9 +34,7 @@ struct ContentView: View {
     )
     @State private var presentedSheet: ContentSheet?
     @State private var playerPresentation: PlayerPresentation?
-    // Avoid scroll-driven movement of the zoom source until dismissal finishes.
-    // The presentation binding can become nil before that transition finishes.
-    @State private var isPlayerPresentationActive = false
+    @State private var activePlayerDismissalID: UUID?
     @State private var neteaseSharePresentation: NeteaseSharePresentation?
     @State private var nowPlayingSharePresentation: NeteaseSharePresentation?
     @State private var pendingMusicRoute: MusicRoute?
@@ -81,11 +79,19 @@ struct ContentView: View {
             )
             .fullScreenCover(
                 item: $playerPresentation,
-                onDismiss: finishPlayerPresentation
+                onDismiss: finishPendingSongNavigation
             ) { destination in
                 switch destination {
                 case .nowPlaying:
                     NowPlayingView(initialPage: initialNowPlayingPage)
+                        .background {
+                            PlayerDismissalTransitionObserver(
+                                onTransitionChange: updatePlayerDismissalProtection
+                            )
+                            .frame(width: 0, height: 0)
+                            .allowsHitTesting(false)
+                            .accessibilityHidden(true)
+                        }
                         .environment(
                             \.openMusicRoute,
                             OpenMusicRouteAction(action: openMusicRoute)
@@ -405,7 +411,7 @@ struct ContentView: View {
             }
         }
         .tabBarMinimizeBehavior(
-            isPlayerPresentationActive ? .never : .onScrollDown
+            activePlayerDismissalID != nil ? .never : .onScrollDown
         )
         .environment(\.musicNavigationNamespace, musicNavigationNamespace)
     }
@@ -561,15 +567,16 @@ struct ContentView: View {
     }
 
     private func presentNowPlaying() {
-        isPlayerPresentationActive = true
         playerPresentation = .nowPlaying
     }
 
-    private func finishPlayerPresentation() {
-        // A new presentation may have been requested while the old one closed.
-        guard playerPresentation == nil else { return }
-        isPlayerPresentationActive = false
-        finishPendingSongNavigation()
+    private func updatePlayerDismissalProtection(id: UUID, isActive: Bool) {
+        if isActive {
+            activePlayerDismissalID = id
+        } else if activePlayerDismissalID == id {
+            // A late completion must not release a newer interactive return.
+            activePlayerDismissalID = nil
+        }
     }
 
     private func openMusicRoute(_ route: MusicRoute) {
