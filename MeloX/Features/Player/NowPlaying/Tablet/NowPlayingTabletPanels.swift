@@ -40,6 +40,7 @@ struct NowPlayingTabletPanels: View {
             )
             .allowsHitTesting(page == .queue)
             .accessibilityHidden(page != .queue)
+            .playerDismissalExclusionsEnabled(page == .queue)
 
             if settings.lyricsStyle == .appleMusic {
                 lyricsPage
@@ -59,6 +60,7 @@ struct NowPlayingTabletPanels: View {
                     )
                     .allowsHitTesting(page == .lyrics)
                     .accessibilityHidden(page != .lyrics)
+                    .playerDismissalExclusionsEnabled(page == .lyrics)
             } else if page == .lyrics {
                 lyricsPage
                     .transition(.opacity)

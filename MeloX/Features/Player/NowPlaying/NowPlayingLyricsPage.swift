@@ -101,6 +101,10 @@ struct NowPlayingLyricsPage: View {
                     onInterfaceVisibilityChange,
                 onInitialFocusPrepared: onInitialFocusPrepared
             )
+            .playerDismissalExcluded(
+                isEnabled: isActive && !lyrics.isEmpty,
+                bottomInset: isInterfaceHidden ? 0 : appleMusicBottomOverlayHeight
+            )
         case .eva:
             EVALyricsView(
                 lyrics: lyrics,

@@ -124,6 +124,7 @@ private struct NowPlayingLyricsUtilityControls: View {
         .opacity(isVisible ? 1 : 0)
         .allowsHitTesting(isVisible)
         .accessibilityHidden(!isVisible)
+        .playerDismissalExclusionsEnabled(isVisible)
         .animation(
             NowPlayingInterfaceTransition.utilityAnimation(
                 isVisible: isVisible,

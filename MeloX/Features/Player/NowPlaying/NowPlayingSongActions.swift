@@ -66,6 +66,7 @@ struct NowPlayingSongActions: View {
         )
         .accessibilityAddTraits(library.contains(song: song) ? .isSelected : [])
         .accessibilityIdentifier("now-playing-favorite")
+        .playerDismissalExcluded()
     }
     private var songMenu: some View {
         Menu {
@@ -227,6 +228,7 @@ struct NowPlayingSongActions: View {
         .menuOrder(.fixed)
         .accessibilityLabel("ui.common.more")
         .accessibilityIdentifier("now-playing-more")
+        .playerDismissalExcluded()
     }
 
     private var lyricsSourceMenu: some View {

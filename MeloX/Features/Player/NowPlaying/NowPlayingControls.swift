@@ -1,5 +1,6 @@
 import MediaPlayer
 import SwiftUI
+import UIKit
 
 struct NowPlayingProgressControl: View {
     @Environment(PlayerStore.self) private var player
@@ -17,6 +18,7 @@ struct NowPlayingProgressControl: View {
             )
             .sliderThumbVisibility(.hidden)
             .tint(.white)
+            .playerDismissalExcluded()
             .accessibilityLabel("ui.player.progress")
             .accessibilityValue(
                 L10n.format(
@@ -164,6 +166,7 @@ private struct NowPlayingQualityMenu: View {
         .accessibilityLabel("ui.player.playback_quality")
         .accessibilityValue(displayedQualityTitle)
         .accessibilityHint("ui.player.quality_hint")
+        .playerDismissalExcluded()
     }
 
     private var displayedQualityTitle: String {
@@ -213,6 +216,7 @@ struct NowPlayingTransportControls: View {
                         : L10n.string("ui.player.shuffle_on")
                 )
                 .accessibilityAddTraits(player.isShuffled ? .isSelected : [])
+                .playerDismissalExcluded()
             }
 
             Spacer(minLength: isTablet ? 0 : nil)
@@ -232,6 +236,7 @@ struct NowPlayingTransportControls: View {
                 )
             )
             .accessibilityLabel("ui.player.previous")
+            .playerDismissalExcluded()
 
             Spacer(minLength: isTablet ? 0 : nil)
 
@@ -276,6 +281,7 @@ struct NowPlayingTransportControls: View {
                     ? L10n.string("ui.player.pause")
                     : L10n.string("ui.common.play")
             )
+            .playerDismissalExcluded()
 
             Spacer(minLength: isTablet ? 0 : nil)
 
@@ -294,6 +300,7 @@ struct NowPlayingTransportControls: View {
                 )
             )
             .accessibilityLabel("ui.player.next")
+            .playerDismissalExcluded()
 
             Spacer(minLength: isTablet ? 0 : nil)
 
@@ -308,6 +315,7 @@ struct NowPlayingTransportControls: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel(player.repeatMode.accessibilityTitle)
                 .accessibilityAddTraits(player.repeatMode == .off ? [] : .isSelected)
+                .playerDismissalExcluded()
             }
         }
         .frame(height: isTablet ? 52 : 82)
@@ -329,6 +337,7 @@ struct NowPlayingVolumeControl: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 32)
                     .layoutPriority(1)
+                    .playerDismissalExcluded()
 
                 Image(systemName: "speaker.wave.3.fill")
                     .font(.caption)
@@ -351,6 +360,7 @@ struct NowPlayingVolumeControl: View {
                 ),
                 in: 0...1
             )
+            .sliderThumbVisibility(.hidden)
             .tint(.white)
             .accessibilityLabel("ui.player.volume")
         case .system:
@@ -361,6 +371,22 @@ struct NowPlayingVolumeControl: View {
 }
 
 private final class AlignedSystemVolumeView: MPVolumeView {
+    // Keep a normal-sized transparent thumb so the native drag target remains.
+    private static let invisibleThumb: UIImage = {
+        let format = UIGraphicsImageRendererFormat()
+        format.opaque = false
+        return UIGraphicsImageRenderer(
+            size: CGSize(width: 32, height: 32),
+            format: format
+        ).image { _ in }
+    }()
+
+    func hideVolumeThumb() {
+        for state: UIControl.State in [.normal, .highlighted, .disabled] {
+            setVolumeThumbImage(Self.invisibleThumb, for: state)
+        }
+    }
+
     override func volumeSliderRect(forBounds bounds: CGRect) -> CGRect {
         bounds
     }
@@ -375,6 +401,7 @@ private struct SystemVolumeSlider: UIViewRepresentable {
         volumeView.showsVolumeSlider = true
         volumeView.showsRouteButton = false
         volumeView.tintColor = .white
+        volumeView.hideVolumeThumb()
         return volumeView
     }
 
@@ -384,6 +411,7 @@ private struct SystemVolumeSlider: UIViewRepresentable {
     ) {
         volumeView.showsVolumeSlider = true
         volumeView.tintColor = .white
+        volumeView.hideVolumeThumb()
     }
 
     func sizeThatFits(
@@ -434,6 +462,7 @@ struct NowPlayingPageSelector: View {
                     Spacer()
 
                     FloatingLyricsButton()
+                        .playerDismissalExcluded()
 
                     Spacer()
 
@@ -516,5 +545,6 @@ struct NowPlayingPageSelector: View {
         .buttonStyle(.plain)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .playerDismissalExcluded()
     }
 }

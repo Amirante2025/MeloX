@@ -28,6 +28,7 @@ struct TextPVFullScreenPlayerView: View {
             .opacity(showsControls ? 1 : 0)
             .allowsHitTesting(showsControls)
             .accessibilityHidden(!showsControls)
+            .playerDismissalExclusionsEnabled(showsControls)
         }
         .accessibilityAction(
             named: showsControls
