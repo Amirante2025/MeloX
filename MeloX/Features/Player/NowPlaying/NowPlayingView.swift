@@ -3,7 +3,6 @@ import UIKit
 
 struct NowPlayingView: View {
     private static let portraitHorizontalPadding: CGFloat = 32
-    let isDismissalTransitionActive: Bool
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -30,11 +29,7 @@ struct NowPlayingView: View {
         pageTransition.page
     }
 
-    init(
-        initialPage: NowPlayingPage = .artwork,
-        isDismissalTransitionActive: Bool = false
-    ) {
-        self.isDismissalTransitionActive = isDismissalTransitionActive
+    init(initialPage: NowPlayingPage = .artwork) {
         _pageTransition = State(
             initialValue: NowPlayingTransitionCoordinator(
                 initialPage: initialPage
@@ -134,10 +129,6 @@ struct NowPlayingView: View {
                 }
             }
         }
-        .playerFreeAreaDismissal(
-            isTransitionActive: isDismissalTransitionActive,
-            onDismiss: { dismiss() }
-        )
         .background {
             NowPlayingLyricSynchronizer(
                 lyrics: lyrics,
@@ -338,7 +329,6 @@ struct NowPlayingView: View {
             portraitPlayerControls(for: song)
                 .allowsHitTesting(!hidesLyricsControls)
                 .accessibilityHidden(hidesLyricsControls)
-                .playerDismissalExclusionsEnabled(!hidesLyricsControls)
 
             if hidesLyricsControls,
                settings.lyricsStyle != .appleMusic {
@@ -574,7 +564,6 @@ struct NowPlayingView: View {
         .hidden()
         .allowsHitTesting(false)
         .accessibilityHidden(true)
-        .playerDismissalExclusionsEnabled(false)
     }
 
     private var keepsStableArtworkFrameMeasurement: Bool {
@@ -645,7 +634,6 @@ struct NowPlayingView: View {
         )
         .allowsHitTesting(page == .queue)
         .accessibilityHidden(page != .queue)
-        .playerDismissalExclusionsEnabled(page == .queue)
     }
 
     private func portraitLyricsPage(
@@ -708,7 +696,6 @@ struct NowPlayingView: View {
         )
         .allowsHitTesting(page == .lyrics)
         .accessibilityHidden(page != .lyrics)
-        .playerDismissalExclusionsEnabled(page == .lyrics)
     }
 
     private var residentLyricsVisualState: NowPlayingPageVisualState {

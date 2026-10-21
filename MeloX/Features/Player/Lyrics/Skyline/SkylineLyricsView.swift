@@ -198,7 +198,6 @@ struct SkylineLyricsView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("ui.lyrics.return_standard")
-                    .playerDismissalExcluded()
                 }
 
                 Spacer()

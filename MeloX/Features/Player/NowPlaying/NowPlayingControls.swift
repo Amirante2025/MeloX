@@ -18,7 +18,6 @@ struct NowPlayingProgressControl: View {
             )
             .sliderThumbVisibility(.hidden)
             .tint(.white)
-            .playerDismissalExcluded()
             .accessibilityLabel("ui.player.progress")
             .accessibilityValue(
                 L10n.format(
@@ -166,7 +165,6 @@ private struct NowPlayingQualityMenu: View {
         .accessibilityLabel("ui.player.playback_quality")
         .accessibilityValue(displayedQualityTitle)
         .accessibilityHint("ui.player.quality_hint")
-        .playerDismissalExcluded()
     }
 
     private var displayedQualityTitle: String {
@@ -216,7 +214,6 @@ struct NowPlayingTransportControls: View {
                         : L10n.string("ui.player.shuffle_on")
                 )
                 .accessibilityAddTraits(player.isShuffled ? .isSelected : [])
-                .playerDismissalExcluded()
             }
 
             Spacer(minLength: isTablet ? 0 : nil)
@@ -236,7 +233,6 @@ struct NowPlayingTransportControls: View {
                 )
             )
             .accessibilityLabel("ui.player.previous")
-            .playerDismissalExcluded()
 
             Spacer(minLength: isTablet ? 0 : nil)
 
@@ -281,7 +277,6 @@ struct NowPlayingTransportControls: View {
                     ? L10n.string("ui.player.pause")
                     : L10n.string("ui.common.play")
             )
-            .playerDismissalExcluded()
 
             Spacer(minLength: isTablet ? 0 : nil)
 
@@ -300,7 +295,6 @@ struct NowPlayingTransportControls: View {
                 )
             )
             .accessibilityLabel("ui.player.next")
-            .playerDismissalExcluded()
 
             Spacer(minLength: isTablet ? 0 : nil)
 
@@ -315,7 +309,6 @@ struct NowPlayingTransportControls: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel(player.repeatMode.accessibilityTitle)
                 .accessibilityAddTraits(player.repeatMode == .off ? [] : .isSelected)
-                .playerDismissalExcluded()
             }
         }
         .frame(height: isTablet ? 52 : 82)
@@ -337,7 +330,6 @@ struct NowPlayingVolumeControl: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 32)
                     .layoutPriority(1)
-                    .playerDismissalExcluded()
 
                 Image(systemName: "speaker.wave.3.fill")
                     .font(.caption)
@@ -462,7 +454,6 @@ struct NowPlayingPageSelector: View {
                     Spacer()
 
                     FloatingLyricsButton()
-                        .playerDismissalExcluded()
 
                     Spacer()
 
@@ -545,6 +536,5 @@ struct NowPlayingPageSelector: View {
         .buttonStyle(.plain)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
-        .playerDismissalExcluded()
     }
 }

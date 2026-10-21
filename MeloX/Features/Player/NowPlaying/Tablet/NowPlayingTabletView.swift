@@ -88,7 +88,6 @@ struct NowPlayingTabletView: View {
                 .buttonStyle(.plain)
                 .glassEffect(.clear.interactive(), in: .circle)
                 .accessibilityLabel("ui.player.collapse")
-                .playerDismissalExcluded()
 
                 Spacer()
             }
@@ -99,7 +98,6 @@ struct NowPlayingTabletView: View {
             GlassEffectContainer(spacing: 12) {
                 HStack(spacing: 12) {
                     FloatingLyricsButton()
-                        .playerDismissalExcluded()
 
                     if page == .lyrics {
                         if lyrics.contains(where: { $0.hasTranslation || $0.hasRomanization }) {
@@ -122,7 +120,6 @@ struct NowPlayingTabletView: View {
                                     ? L10n.string("ui.settings.lyrics.style.text_pv")
                                     : L10n.string("ui.settings.skyline.title")
                             )
-                            .playerDismissalExcluded()
                         }
                     }
 

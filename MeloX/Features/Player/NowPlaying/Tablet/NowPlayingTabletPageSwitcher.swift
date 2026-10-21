@@ -51,7 +51,6 @@ struct NowPlayingTabletPageSwitcher: View {
                 : L10n.string("ui.common.not_selected")
         )
         .accessibilityAddTraits(isSelected ? .isSelected : [])
-        .playerDismissalExcluded()
     }
 
     private func select(_ destination: NowPlayingPage) {

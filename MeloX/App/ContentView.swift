@@ -83,10 +83,7 @@ struct ContentView: View {
             ) { destination in
                 switch destination {
                 case .nowPlaying:
-                    NowPlayingView(
-                        initialPage: initialNowPlayingPage,
-                        isDismissalTransitionActive: activePlayerDismissalID != nil
-                    )
+                    NowPlayingView(initialPage: initialNowPlayingPage)
                         .background {
                             PlayerDismissalTransitionObserver(
                                 onTransitionChange: updatePlayerDismissalProtection

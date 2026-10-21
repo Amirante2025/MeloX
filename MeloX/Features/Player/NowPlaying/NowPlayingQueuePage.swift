@@ -44,7 +44,6 @@ struct NowPlayingQueuePage: View {
                 .opacity(isSongHeaderHidden ? 1 : 0)
                 .allowsHitTesting(isSongHeaderHidden)
                 .accessibilityHidden(!isSongHeaderHidden)
-                .playerDismissalExclusionsEnabled(isSongHeaderHidden)
 
             List {
                 if presentation == .portrait {
@@ -154,7 +153,6 @@ struct NowPlayingQueuePage: View {
             .environment(\.defaultMinListRowHeight, 1)
             .environment(\.defaultMinListHeaderHeight, 0)
             .environment(\.editMode, .constant(.active))
-            .playerDismissalExcluded()
             .padding(.bottom, bottomContentInset)
             .onScrollGeometryChange(
                 for: CGFloat.self,
@@ -318,7 +316,6 @@ private struct NowPlayingQueueModeControls: View {
         .buttonStyle(.plain)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
-        .playerDismissalExcluded()
     }
 
     private func toggleShuffle() {

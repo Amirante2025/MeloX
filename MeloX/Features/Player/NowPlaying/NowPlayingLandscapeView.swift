@@ -126,7 +126,6 @@ struct NowPlayingLandscapeView: View {
                 .opacity(hidesLyricsControls ? 0 : 1)
                 .allowsHitTesting(!hidesLyricsControls)
                 .accessibilityHidden(hidesLyricsControls)
-                .playerDismissalExclusionsEnabled(!hidesLyricsControls)
 
             if hidesLyricsControls,
                settings.lyricsStyle != .appleMusic {
@@ -195,7 +194,6 @@ struct NowPlayingLandscapeView: View {
             )
             .allowsHitTesting(page == .queue)
             .accessibilityHidden(page != .queue)
-            .playerDismissalExclusionsEnabled(page == .queue)
 
             if page == .artwork {
                 landscapeArtworkControls
@@ -268,7 +266,6 @@ struct NowPlayingLandscapeView: View {
         )
         .allowsHitTesting(page == .lyrics)
         .accessibilityHidden(page != .lyrics)
-        .playerDismissalExclusionsEnabled(page == .lyrics)
         .accessibilityAction(
             named: lyricsInterfaceAccessibilityActionName
         ) {

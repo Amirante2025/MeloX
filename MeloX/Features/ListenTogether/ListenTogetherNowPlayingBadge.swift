@@ -27,7 +27,6 @@ struct ListenTogetherNowPlayingBadge: View {
                 )
             )
             .accessibilityHint("ui.listen_together.view_members_hint")
-            .playerDismissalExcluded()
             .popover(isPresented: $showsMembers) {
                 ListenTogetherMembersView()
                     .presentationCompactAdaptation(.sheet)

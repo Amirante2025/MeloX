@@ -75,7 +75,6 @@ struct NowPlayingLyricsLanguageButton: View {
         .accessibilityLabel("ui.settings.lyrics.content.section.translation_pronunciation")
         .accessibilityValue(accessibilityValue)
         .accessibilityHint(accessibilityHint)
-        .playerDismissalExcluded()
     }
 
     private var usesAppleMusic26Presentation: Bool {

@@ -166,7 +166,6 @@ struct NowPlayingLandscapeSongHeader: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("ui.settings.skyline.title")
-                .playerDismissalExcluded()
             }
 
             NowPlayingSongActions(song: song)

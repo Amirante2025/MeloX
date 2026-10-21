@@ -22,7 +22,6 @@ struct HeartModeNowPlayingBadge: View {
             .fixedSize()
             .accessibilityLabel("ui.heart_mode.active")
             .accessibilityHint("ui.heart_mode.manage_hint")
-            .playerDismissalExcluded()
             .confirmationDialog(
                 "ui.home.action.heart_mode",
                 isPresented: $showsActions,
